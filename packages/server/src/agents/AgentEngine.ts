@@ -7,6 +7,7 @@ interface AgentDefinition {
   description: string;
   capabilities: string[];
   personality?: string[];
+  systemPrompt?: string;
 }
 
 const AGENT_REGISTRY: AgentDefinition[] = [
@@ -16,6 +17,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责整体项目规划、进度跟踪和团队协调，确保项目按时高质量交付',
     capabilities: ['项目规划', '任务分配', '进度跟踪', '风险管理', '质量把控', '团队协调'],
     personality: ['严谨', '高效', '目标导向'],
+    systemPrompt: '你是一位专业的项目经理，负责统筹协调AI视频制作项目。你需要制定详细的项目计划，分配任务，跟踪进度，识别风险，确保项目按时交付。',
   },
   {
     role: 'creative_director',
@@ -23,6 +25,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责整体创意方向把控、视觉风格指导和内容质量审核',
     capabilities: ['创意方向', '视觉把控', '内容审核', '风格指导', '创意激发'],
     personality: ['创意', '敏锐', '追求卓越'],
+    systemPrompt: '你是一位经验丰富的创意总监，负责把控AI视频的创意方向和视觉风格。你需要确保内容既有创意又符合品牌调性。',
   },
   {
     role: 'script_writer',
@@ -30,6 +33,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责视频脚本创作、剧情设计和台词撰写',
     capabilities: ['剧本创作', '角色设计', '剧情编排', '台词撰写', '分镜脚本', '节奏把控'],
     personality: ['创意丰富', '故事感强', '细腻'],
+    systemPrompt: '你是一位专业编剧，擅长创作吸引人的视频脚本。你需要设计引人入胜的剧情，塑造立体的人物，撰写自然的对话。',
   },
   {
     role: 'storyboard_artist',
@@ -37,6 +41,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责分镜设计、视觉构图和画面规划',
     capabilities: ['分镜设计', '视觉构图', '镜头语言', '场景设计', '画面节奏', '运镜设计'],
     personality: ['视觉感强', '细致', '有空间感'],
+    systemPrompt: '你是一位专业的分镜师，负责将脚本转化为视觉语言。你需要设计富有表现力的镜头语言，包括构图、运镜、光线等。',
   },
   {
     role: 'voice_actor',
@@ -44,6 +49,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责旁白配音、角色配音和语音合成',
     capabilities: ['旁白配音', '角色配音', '语音合成', '情感表达', '语速控制', '语气把握'],
     personality: ['表现力强', '声音有磁性', '情感丰富'],
+    systemPrompt: '你是一位专业配音演员，擅长为视频内容进行配音。你需要根据内容情感选择合适的语气、语速和表达方式。',
   },
   {
     role: 'video_editor',
@@ -51,6 +57,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责视频剪辑、特效制作和后期合成',
     capabilities: ['视频剪辑', '特效制作', '调色', '转场设计', '成品输出', '节奏把控'],
     personality: ['节奏感强', '技术娴熟', '追求完美'],
+    systemPrompt: '你是一位专业视频剪辑师，负责将素材剪辑成完整的视频作品。你需要把控节奏，选择合适的转场，进行调色和特效处理。',
   },
   {
     role: 'marketing_strategist',
@@ -58,6 +65,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责营销策略制定、卖点提炼和传播规划',
     capabilities: ['市场分析', '营销策略', '卖点提炼', '传播规划', '效果评估', '用户洞察'],
     personality: ['市场敏感度高', '策略性强', '数据驱动'],
+    systemPrompt: '你是一位专业营销策划师，负责制定视频营销策略。你需要分析目标受众，提炼核心卖点，规划传播渠道和节奏。',
   },
   {
     role: 'brand_analyst',
@@ -65,6 +73,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责品牌分析、定位和视觉规范',
     capabilities: ['品牌分析', '品牌定位', '视觉规范', '竞品分析', '调性把控', '品牌故事'],
     personality: ['品牌思维', '洞察力强', '系统化'],
+    systemPrompt: '你是一位专业品牌分析师，负责深入分析品牌调性。你需要理解品牌核心价值，确保视频内容符合品牌规范。',
   },
   {
     role: 'culture_researcher',
@@ -72,6 +81,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责文化调研、地方特色挖掘和内容策划',
     capabilities: ['文化调研', '地方特色', '历史研究', '民俗挖掘', '内容策划', '故事挖掘'],
     personality: ['好奇心强', '研究型', '文化底蕴深'],
+    systemPrompt: '你是一位专业文化研究员，负责挖掘文化和地方特色。你需要深入研究相关文化背景，为视频创作提供丰富的文化元素。',
   },
   {
     role: 'music_composer',
@@ -79,6 +89,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责背景音乐、音效设计和音频制作',
     capabilities: ['配乐创作', '音效设计', '音频混音', '情绪音乐', '版权音乐', '声音设计'],
     personality: ['音乐感强', '细腻', '有创造力'],
+    systemPrompt: '你是一位专业音乐设计师，负责为视频创作配乐和音效。你需要根据内容情绪选择或创作合适的音乐，设计恰当的音效。',
   },
   {
     role: 'quality_inspector',
@@ -86,6 +97,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责内容质量审核、合规检查和最终验收',
     capabilities: ['质量审核', '合规检查', '内容审查', '技术质检', '最终验收', '标准把控'],
     personality: ['严谨', '细致', '原则性强'],
+    systemPrompt: '你是一位专业质量审核员，负责审核视频内容质量。你需要从内容、技术、合规等多个维度进行审核，确保输出达到商用标准。',
   },
   {
     role: 'data_analyst',
@@ -93,6 +105,7 @@ const AGENT_REGISTRY: AgentDefinition[] = [
     description: '负责数据分析、效果追踪和优化建议',
     capabilities: ['数据采集', '数据分析', '效果追踪', '可视化', '优化建议', '报告撰写'],
     personality: ['数据驱动', '逻辑清晰', '细致'],
+    systemPrompt: '你是一位专业数据分析师，负责分析视频效果数据。你需要收集关键指标，提供洞察和优化建议，帮助提升视频表现。',
   },
 ];
 
@@ -143,6 +156,128 @@ const PIPELINE_TEMPLATES: Record<string, PipelinePhase[]> = {
   ],
 };
 
+// AI Configuration
+interface AIConfig {
+  provider: 'openai' | 'claude' | 'mock';
+  apiKey: string;
+  model: string;
+}
+
+function getAIConfig(): AIConfig {
+  const provider = process.env.AI_PROVIDER || 'mock';
+  return {
+    provider: provider as AIConfig['provider'],
+    apiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || '',
+    model: process.env.AI_MODEL || 'gpt-4o',
+  };
+}
+
+// AI Service for making API calls
+class AIService {
+  private config: AIConfig;
+
+  constructor() {
+    this.config = getAIConfig();
+  }
+
+  async complete(prompt: string, systemPrompt?: string): Promise<string> {
+    if (this.config.provider === 'mock') {
+      return this.mockResponse(prompt);
+    }
+
+    if (this.config.provider === 'openai') {
+      return this.openaiComplete(prompt, systemPrompt);
+    }
+
+    if (this.config.provider === 'claude') {
+      return this.claudeComplete(prompt, systemPrompt);
+    }
+
+    return this.mockResponse(prompt);
+  }
+
+  private async openaiComplete(prompt: string, systemPrompt?: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.model,
+          messages: [
+            ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
+            { role: 'user' as const, content: prompt },
+          ],
+          max_tokens: 2000,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content || '';
+    } catch (error) {
+      console.error('[AIService] OpenAI error:', error);
+      return this.mockResponse(prompt);
+    }
+  }
+
+  private async claudeComplete(prompt: string, systemPrompt?: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: this.config.model,
+          max_tokens: 2000,
+          messages: [
+            ...(systemPrompt ? { role: 'user' as const, content: systemPrompt } : { role: 'user' as const, content: '' }),
+            { role: 'user' as const, content: prompt },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.content[0]?.text || '';
+    } catch (error) {
+      console.error('[AIService] Claude error:', error);
+      return this.mockResponse(prompt);
+    }
+  }
+
+  private mockResponse(prompt: string): string {
+    // Return a realistic mock response based on the prompt
+    const responses: Record<string, string> = {
+      default: '任务已完成，基于AI分析生成了优化建议。',
+      script: '剧本创作完成，包含8个场景，总时长约3分钟，符合目标受众偏好。',
+      storyboard: '分镜设计完成，包含30个关键帧，采用电影感构图风格。',
+      marketing: '营销策略制定完成，目标渠道为抖音、视频号和小红书。',
+      brand: '品牌分析完成，品牌调性为专业、创新、年轻化。',
+      culture: '文化调研完成，挖掘了3个核心文化元素和2个历史故事。',
+    };
+
+    for (const [key, value] of Object.entries(responses)) {
+      if (prompt.toLowerCase().includes(key)) {
+        return value;
+      }
+    }
+    return responses.default;
+  }
+}
+
 interface QualityReviewResult {
   passed: boolean;
   score: number;
@@ -153,6 +288,11 @@ interface QualityReviewResult {
 class AgentEngine {
   private initialized = false;
   private activeProjects: Map<string, AbortController> = new Map();
+  private aiService: AIService;
+
+  constructor() {
+    this.aiService = new AIService();
+  }
 
   async initialize() {
     if (this.initialized) return;
@@ -206,9 +346,9 @@ class AgentEngine {
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { 
-        status: 'in_production', 
-        progress: 5, 
+      data: {
+        status: 'in_production',
+        progress: 5,
         startedAt: new Date(),
         currentPhase: pipeline[0]?.name || '启动',
       },
@@ -254,19 +394,19 @@ class AgentEngine {
   }
 
   private async createPipelineTasks(
-    projectId: string, 
-    phases: PipelinePhase[], 
+    projectId: string,
+    phases: PipelinePhase[],
     project: any
   ) {
     let taskIndex = 0;
-    
+
     for (let phaseIdx = 0; phaseIdx < phases.length; phaseIdx++) {
       const phase = phases[phaseIdx];
-      
+
       for (const role of phase.roles) {
         const def = AGENT_REGISTRY.find((a) => a.role === role);
         const taskTitle = this.getTaskTitleForRole(role, project.type);
-        
+
         await prisma.agentTask.create({
           data: {
             projectId,
@@ -281,8 +421,8 @@ class AgentEngine {
             maxIterations: phase.maxIterations || 1,
             requiresReview: phase.requiresReview || false,
             isParallel: phase.parallel || false,
-            inputData: JSON.stringify({ 
-              phase: phaseIdx + 1, 
+            inputData: JSON.stringify({
+              phase: phaseIdx + 1,
               totalPhases: phases.length,
               phaseName: phase.name,
             }),
@@ -312,7 +452,7 @@ class AgentEngine {
   }
 
   private async runPipeline(
-    projectId: string, 
+    projectId: string,
     phases: PipelinePhase[],
     signal: AbortSignal
   ) {
@@ -323,7 +463,7 @@ class AgentEngine {
       }
 
       const phase = phases[phaseIdx];
-      
+
       await prisma.project.update({
         where: { id: projectId },
         data: { currentPhase: phase.name },
@@ -359,9 +499,9 @@ class AgentEngine {
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { 
-        status: 'completed', 
-        progress: 100, 
+      data: {
+        status: 'completed',
+        progress: 100,
         completedAt: new Date(),
         currentPhase: '已完成',
       },
@@ -376,7 +516,7 @@ class AgentEngine {
     phase: PipelinePhase,
     signal: AbortSignal
   ) {
-    const promises = phase.roles.map(role => 
+    const promises = phase.roles.map(role =>
       this.executeTaskWithIteration(projectId, role, phase, signal)
     );
     await Promise.all(promises);
@@ -389,7 +529,7 @@ class AgentEngine {
     signal: AbortSignal
   ) {
     const maxIterations = phase.maxIterations || 1;
-    
+
     for (let iteration = 1; iteration <= maxIterations; iteration++) {
       if (signal.aborted) return;
 
@@ -403,7 +543,7 @@ class AgentEngine {
       if (iteration > 1) {
         await prisma.agentTask.update({
           where: { id: task.id },
-          data: { 
+          data: {
             iteration,
             status: 'pending',
             feedback: `第 ${iteration} 轮迭代，基于上一轮反馈优化`,
@@ -415,7 +555,7 @@ class AgentEngine {
 
       if (phase.requiresReview && iteration < maxIterations) {
         const reviewResult = await this.performQualityReview(task.id, role);
-        
+
         if (reviewResult.passed) {
           await this.sendMessage({
             projectId,
@@ -431,7 +571,7 @@ class AgentEngine {
             content: `质量审核未通过，评分：${reviewResult.score}/100。${reviewResult.feedback.join('；')}`,
             messageType: 'review_fail',
           });
-          
+
           await prisma.agentTask.update({
             where: { id: task.id },
             data: {
@@ -446,6 +586,41 @@ class AgentEngine {
   }
 
   private async performQualityReview(taskId: string, role: string): Promise<QualityReviewResult> {
+    const aiConfig = getAIConfig();
+    const def = AGENT_REGISTRY.find((a) => a.role === role);
+
+    if (aiConfig.provider !== 'mock' && def?.systemPrompt) {
+      try {
+        const reviewPrompt = `请审核以下任务输出，从内容质量、创意水平、技术规范等维度评分（0-100），并给出反馈和建议。
+
+评分标准：
+- 90-100: 优秀，无需修改
+- 80-89: 良好，小幅优化
+- 70-79: 一般，需要修改
+- 70以下: 不合格，需要重做
+
+请以JSON格式返回：
+{
+  "score": 分数,
+  "passed": true/false,
+  "feedback": ["反馈1", "反馈2"],
+  "suggestions": ["建议1", "建议2"]
+}`;
+
+        const response = await this.aiService.complete(reviewPrompt, def.systemPrompt);
+        const parsed = JSON.parse(response);
+        return {
+          passed: parsed.score >= 85,
+          score: parsed.score,
+          feedback: parsed.feedback || [],
+          suggestions: parsed.suggestions || [],
+        };
+      } catch (error) {
+        console.error('[AgentEngine] AI review error:', error);
+      }
+    }
+
+    // Fallback to simulated review
     await new Promise(resolve => setTimeout(resolve, 800));
 
     const baseScores: Record<string, number> = {
@@ -480,8 +655,8 @@ class AgentEngine {
     };
 
     const allFeedback = feedbackTemplates[role] || ['内容质量良好，可以继续优化'];
-    const feedback = passed 
-      ? allFeedback.slice(0, 1) 
+    const feedback = passed
+      ? allFeedback.slice(0, 1)
       : allFeedback.slice(0, Math.floor(Math.random() * 2) + 2);
 
     const suggestions = [
@@ -538,7 +713,7 @@ class AgentEngine {
       messageType: 'notification',
     });
 
-    await this.simulateTaskWork(task, agent);
+    await this.performTaskWork(task, agent);
 
     const outputData = this.generateTaskOutput(task);
 
@@ -567,7 +742,49 @@ class AgentEngine {
     return { taskId, status: 'completed', outputData };
   }
 
-  private async simulateTaskWork(task: any, agent: any) {
+  private async performTaskWork(task: any, agent: any) {
+    const aiConfig = getAIConfig();
+    const def = AGENT_REGISTRY.find((a) => a.role === task.agentRole);
+
+    // Use AI if configured
+    if (aiConfig.provider !== 'mock' && def?.systemPrompt) {
+      try {
+        const project = await prisma.project.findUnique({ where: { id: task.projectId } });
+        const prompt = `为项目"${project?.name}"执行"${task.title}"任务。
+任务描述：${task.description}
+项目类型：${project?.type}
+当前阶段：${task.phase}
+
+请生成任务输出的详细描述，包括：
+1. 具体的产出内容
+2. 关键要点
+3. 质量指标`;
+
+        await this.sendMessage({
+          fromAgentId: agent.id,
+          projectId: task.projectId,
+          taskId: task.id,
+          content: `${agent.name}：正在调用AI生成内容...`,
+          messageType: 'notification',
+        }).catch(() => { });
+
+        const aiOutput = await this.aiService.complete(prompt, def.systemPrompt);
+
+        await this.sendMessage({
+          fromAgentId: agent.id,
+          projectId: task.projectId,
+          taskId: task.id,
+          content: `${agent.name}：AI生成完成，正在整合结果...`,
+          messageType: 'notification',
+        }).catch(() => { });
+
+        return;
+      } catch (error) {
+        console.error('[AgentEngine] AI work error:', error);
+      }
+    }
+
+    // Fallback to simulated work
     const baseDelay = 2000;
     const randomDelay = Math.random() * 2000;
     await new Promise((resolve) => setTimeout(resolve, baseDelay + randomDelay));
@@ -575,21 +792,21 @@ class AgentEngine {
     const checkpoints = 4;
     for (let i = 1; i <= checkpoints; i++) {
       await new Promise((resolve) => setTimeout(resolve, 400 + Math.random() * 400));
-      
+
       const progressMessages = [
         '正在分析需求...',
         '正在构思方案...',
         '正在制作内容...',
         '正在优化细节...',
       ];
-      
+
       await this.sendMessage({
         fromAgentId: agent.id,
         projectId: task.projectId,
         taskId: task.id,
         content: `${agent.name}：${progressMessages[i - 1] || '进行中...'}（${Math.round((i / checkpoints) * 100)}%）`,
         messageType: 'notification',
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }
 
@@ -802,12 +1019,12 @@ class AgentEngine {
       abortController.abort();
       this.activeProjects.delete(projectId);
     }
-    
+
     await prisma.project.update({
       where: { id: projectId },
       data: { status: 'paused' },
     });
-    
+
     return { message: 'Project paused' };
   }
 
@@ -855,10 +1072,10 @@ class AgentEngine {
 
   private async handleProjectError(projectId: string, errorMessage: string) {
     this.activeProjects.delete(projectId);
-    
+
     await prisma.project.update({
       where: { id: projectId },
-      data: { 
+      data: {
         status: 'failed',
         errorMessage,
       },

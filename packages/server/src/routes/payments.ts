@@ -12,6 +12,32 @@ const createOrderSchema = z.object({
   amount: z.number().positive(),
 });
 
+// Alipay configuration from environment variables
+interface AlipayConfig {
+  appId: string;
+  privateKey: string;
+  alipayPublicKey: string;
+  gateway: string;
+  mode: 'production' | 'mock';
+}
+
+function getAlipayConfig(): AlipayConfig {
+  const appId = process.env.ALIPAY_APP_ID || '';
+  const privateKey = process.env.ALIPAY_APP_PRIVATE_KEY || '';
+  const alipayPublicKey = process.env.ALIPAY_ALIPAY_PUBLIC_KEY || '';
+  const isProduction = process.env.NODE_ENV === 'production' && appId && privateKey && alipayPublicKey;
+
+  return {
+    appId,
+    privateKey,
+    alipayPublicKey,
+    gateway: isProduction
+      ? 'https://openapi.alipay.com/gateway.do'
+      : 'https://openapi-sandbox.dl.alipaydev.com/gateway.do',
+    mode: isProduction ? 'production' : 'mock',
+  };
+}
+
 // Generate order number
 function generateOrderNo(): string {
   const timestamp = Date.now();
@@ -23,7 +49,8 @@ function generateOrderNo(): string {
 router.post('/create-order', requireAuth, validate(createOrderSchema), async (req: Request, res: Response) => {
   try {
     const { plan, amount } = req.body;
-    
+    const alipayConfig = getAlipayConfig();
+
     // Create order with authenticated user's profile
     const orderNo = generateOrderNo();
     const order = await prisma.order.create({
@@ -38,19 +65,67 @@ router.post('/create-order', requireAuth, validate(createOrderSchema), async (re
       },
     });
 
-    // In production, integrate with Alipay SDK
-    // For now, return mock payment URL
-    const paymentUrl = `https://openapi.alipay.com/gateway.do?out_trade_no=${orderNo}&total_amount=${amount / 100}&subject=AIGC-MAS${plan}订阅`;
+    // Generate payment URL based on mode
+    if (alipayConfig.mode === 'production') {
+      // Real Alipay integration
+      const AlipaySdk = require('alipay-sdk').default;
+      const alipay = new AlipaySdk({
+        appId: alipayConfig.appId,
+        privateKey: alipayConfig.privateKey,
+        alipayPublicKey: alipayConfig.alipayPublicKey,
+        gateway: alipayConfig.gateway,
+      });
 
-    res.json({
-      success: true,
-      data: {
-        orderId: order.id,
-        orderNo: order.orderNo,
-        paymentUrl,
-        qrCodeUrl: `/api/payments/qrcode/${order.orderNo}`, // Mock QR code endpoint
-      },
-    });
+      const bizContent = {
+        outTradeNo: orderNo,
+        productCode: 'FAST_INSTANT_TRADE_PAY',
+        totalAmount: (amount / 100).toFixed(2),
+        subject: `AIGC-MAS ${plan === 'pro' ? '专业版' : '企业版'} 订阅`,
+        body: `AIGC-MAS ${plan} subscription`,
+      };
+
+      const signOptions: any = {
+        method: 'alipay.trade.page.pay',
+        bizContent,
+      };
+
+      const { sign } = await alipay.sign(signOptions, 'RSA2');
+      const paymentUrl = `${alipayConfig.gateway}?${new URLSearchParams({
+        app_id: alipayConfig.appId,
+        method: 'alipay.trade.page.pay',
+        charset: 'utf-8',
+        sign_type: 'RSA2',
+        timestamp: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().split(' ')[0],
+        version: '1.0',
+        biz_content: JSON.stringify(bizContent),
+        sign,
+      }).toString()}`;
+
+      res.json({
+        success: true,
+        data: {
+          orderId: order.id,
+          orderNo: order.orderNo,
+          paymentUrl,
+          qrCodeUrl: `/api/payments/qrcode/${order.orderNo}`,
+          mode: 'production',
+        },
+      });
+    } else {
+      // Mock mode for development/testing
+      const mockPaymentUrl = `https://openapi-sandbox.dl.alipaydev.com/gateway.do?out_trade_no=${orderNo}&total_amount=${(amount / 100).toFixed(2)}&subject=AIGC-MAS${plan}订阅&qr_code_method=alipay.qrcode.manage.generate&qr_code=mock`;
+
+      res.json({
+        success: true,
+        data: {
+          orderId: order.id,
+          orderNo: order.orderNo,
+          paymentUrl: mockPaymentUrl,
+          qrCodeUrl: `/api/payments/qrcode/${order.orderNo}`,
+          mode: 'mock',
+        },
+      });
+    }
   } catch (error: any) {
     console.error('Create order error:', error);
     res.status(500).json({
@@ -63,11 +138,28 @@ router.post('/create-order', requireAuth, validate(createOrderSchema), async (re
 // Alipay callback (notify_url)
 router.post('/alipay-notify', async (req: Request, res: Response) => {
   try {
-    const { out_trade_no, trade_status, trade_no } = req.body;
+    const alipayConfig = getAlipayConfig();
 
-    // Verify signature (in production)
-    // const signType = req.body.sign_type;
-    // const signature = req.body.sign;
+    // Verify signature
+    const { sign_type, sign, ...params } = req.body;
+
+    if (alipayConfig.mode === 'production') {
+      const AlipaySdk = require('alipay-sdk').default;
+      const alipay = new AlipaySdk({
+        appId: alipayConfig.appId,
+        privateKey: alipayConfig.privateKey,
+        alipayPublicKey: alipayConfig.alipayPublicKey,
+        gateway: alipayConfig.gateway,
+      });
+
+      const verified = alipay.checkNotifySign(req.body);
+      if (!verified) {
+        console.error('Alipay signature verification failed');
+        return res.send('fail');
+      }
+    }
+
+    const { out_trade_no, trade_status, trade_no } = req.body;
 
     if (trade_status === 'TRADE_SUCCESS' || trade_status === 'TRADE_FINISHED') {
       // Update order status
@@ -115,7 +207,7 @@ router.post('/alipay-notify', async (req: Request, res: Response) => {
 router.get('/order/:orderNo', async (req: Request, res: Response) => {
   try {
     const { orderNo } = req.params;
-    
+
     const order = await prisma.order.findUnique({
       where: { orderNo },
     });
@@ -137,21 +229,33 @@ router.get('/order/:orderNo', async (req: Request, res: Response) => {
   }
 });
 
-// Mock QR code endpoint (in production, generate real QR code)
+// Mock QR code endpoint for development
 router.get('/qrcode/:orderNo', async (req: Request, res: Response) => {
   try {
     const { orderNo } = req.params;
-    
-    // Return mock QR code as base64
+    const order = await prisma.order.findUnique({
+      where: { orderNo },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Order not found' }
+      });
+    }
+
+    // Generate a simple QR code placeholder for mock mode
     // In production, use `qrcode` library to generate real QR code
     const mockQrDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-    
+
     res.json({
       success: true,
       data: {
         orderNo,
         qrCode: mockQrDataUrl,
-        paymentUrl: `https://openapi.alipay.com/gateway.do?out_trade_no=${orderNo}`,
+        paymentUrl: `https://openapi-sandbox.dl.alipaydev.com/gateway.do?out_trade_no=${orderNo}`,
+        amount: order.amount,
+        status: order.status,
       },
     });
   } catch (error: any) {
@@ -179,6 +283,18 @@ router.get('/orders', requireAuth, async (req: Request, res: Response) => {
       error: { code: 'SERVER_ERROR', message: error.message }
     });
   }
+});
+
+// Get payment config (public key for Alipay verification)
+router.get('/config', (req: res) => {
+  const alipayConfig = getAlipayConfig();
+  res.json({
+    success: true,
+    data: {
+      mode: alipayConfig.mode,
+      alipayPublicKey: alipayConfig.mode === 'production' ? alipayConfig.alipayPublicKey : null,
+    },
+  });
 });
 
 export default router;

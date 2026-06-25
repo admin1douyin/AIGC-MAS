@@ -1,0 +1,136 @@
+/* ========================================
+   Brand Design System — AI Video Platform
+   Multi-Agent Service for Video Production
+   ======================================== */
+
+:root {
+  /* === Brand Colors === */
+  --color-primary: #6C5CE7;
+  --color-primary-hover: #7C6EF0;
+  --color-primary-active: #5A4BD6;
+  --color-primary-light: #A29BFE;
+  --color-primary-bg: rgba(108, 92, 231, 0.08);
+  --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
+
+  /* === Neutral Palette (Dark Theme) === */
+  --color-bg: #0A0A0F;
+  --color-bg-elevated: #12121A;
+  --color-bg-surface: #1A1A26;
+  --color-bg-surface-hover: #222233;
+  --color-bg-overlay: rgba(10, 10, 15, 0.85);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* === Text Colors === */
+  --color-text-primary: #F0F0F5;
+  --color-text-secondary: #9B9BB0;
+  --color-text-tertiary: #6B6B80;
+  --color-text-inverse: #0A0A0F;
+  --color-text-accent: #6C5CE7;
+
+  /* === Gradient Accents === */
+  --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
+  --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
+  --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
+  --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
+  --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+
+  /* === State Colors === */
+  --state-success: #00B894;
+  --state-warning: #FDCB6E;
+  --state-error: #E17055;
+  --state-info: #74B9FF;
+
+  /* === Typography === */
+  --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* === Spacing === */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* === Radius === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.15);
+  --shadow-glow-strong: 0 0 60px rgba(108, 92, 231, 0.25);
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* === Z-Index === */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* === Typography Classes === */
+.vp-display { font-family: var(--font-display); font-weight: 700; letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); }
+.vp-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
+.vp-body { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-normal); }
+.vp-caption { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+.vp-mono { font-family: var(--font-mono); }
+
+/* === Gradient Text Utility === */
+.vp-gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Glow Effects === */
+.vp-glow-border {
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  box-shadow: var(--shadow-glow);
+}
+
+.vp-glow-border:hover {
+  border-color: rgba(108, 92, 231, 0.5);
+  box-shadow: var(--shadow-glow-strong);
+}

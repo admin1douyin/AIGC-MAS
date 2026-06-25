@@ -1,0 +1,80 @@
+{
+  "root": {
+    "nodeId": "gen-project-shell",
+    "kind": "project-shell",
+    "pageIds": ["page-index", "page-short-drama", "page-enterprise-video", "page-cultural-tourism", "page-about", "page-contact"],
+    "output": "partials/project-shell.html",
+    "sharedRegions": ["header", "footer", "root-frame"],
+    "privateRegions": [],
+    "mutableSlots": ["activeNavItem", "pageTitle"],
+    "status": "planned",
+    "children": [
+      {
+        "nodeId": "gen-page-index",
+        "kind": "page-leaf",
+        "pageIds": ["page-index"],
+        "output": "pages/index.html",
+        "sharedRegions": [],
+        "privateRegions": ["hero section", "services overview", "platform features", "workflow showcase", "stats section", "CTA section"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-short-drama",
+        "kind": "page-leaf",
+        "pageIds": ["page-short-drama"],
+        "output": "pages/short-drama.html",
+        "sharedRegions": [],
+        "privateRegions": ["service hero", "capabilities grid", "workflow steps", "case showcase", "pricing tiers", "service CTA"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-enterprise-video",
+        "kind": "page-leaf",
+        "pageIds": ["page-enterprise-video"],
+        "output": "pages/enterprise-video.html",
+        "sharedRegions": [],
+        "privateRegions": ["service hero", "service categories", "production pipeline", "portfolio grid", "client logos", "service CTA"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-cultural-tourism",
+        "kind": "page-leaf",
+        "pageIds": ["page-cultural-tourism"],
+        "output": "pages/cultural-tourism.html",
+        "sharedRegions": [],
+        "privateRegions": ["service hero", "tourism capabilities", "destination showcase", "production process", "partnership model", "service CTA"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-about",
+        "kind": "page-leaf",
+        "pageIds": ["page-about"],
+        "output": "pages/about.html",
+        "sharedRegions": [],
+        "privateRegions": ["about hero", "mission section", "team grid", "technology stack", "milestone timeline", "values section"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-contact",
+        "kind": "page-leaf",
+        "pageIds": ["page-contact"],
+        "output": "pages/contact.html",
+        "sharedRegions": [],
+        "privateRegions": ["contact hero", "contact form", "office locations", "FAQ section", "social links"],
+        "mutableSlots": ["activeNavItem", "pageTitle"],
+        "status": "planned",
+        "children": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,415 @@
+{
+  "data": [
+    {
+      "id": "page-index",
+      "title": "首页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/index.html",
+        "interactions": [
+          {
+            "domId": "cta-short-drama",
+            "targetPageId": "page-short-drama",
+            "transitionLabel": "探索短剧服务"
+          },
+          {
+            "domId": "nav-short-drama",
+            "targetPageId": "page-short-drama",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-about",
+            "targetPageId": "page-about",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-contact",
+            "targetPageId": "page-contact",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-short-drama",
+      "title": "AIGC短剧制作",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/short-drama.html",
+        "interactions": [
+          {
+            "domId": "cta-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "transitionLabel": "了解企业视频"
+          },
+          {
+            "domId": "back-home",
+            "targetPageId": "page-index",
+            "hideEdge": true,
+            "transitionLabel": "返回首页"
+          },
+          {
+            "domId": "nav-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-about",
+            "targetPageId": "page-about",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-contact",
+            "targetPageId": "page-contact",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-enterprise-video",
+      "title": "企业视频服务",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 1240,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/enterprise-video.html",
+        "interactions": [
+          {
+            "domId": "cta-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "transitionLabel": "了解文旅服务"
+          },
+          {
+            "domId": "back-home",
+            "targetPageId": "page-index",
+            "hideEdge": true,
+            "transitionLabel": "返回首页"
+          },
+          {
+            "domId": "nav-short-drama",
+            "targetPageId": "page-short-drama",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-about",
+            "targetPageId": "page-about",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-contact",
+            "targetPageId": "page-contact",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-cultural-tourism",
+      "title": "文旅宣传服务",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 1860,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/cultural-tourism.html",
+        "interactions": [
+          {
+            "domId": "cta-about",
+            "targetPageId": "page-about",
+            "transitionLabel": "了解我们"
+          },
+          {
+            "domId": "back-home",
+            "targetPageId": "page-index",
+            "hideEdge": true,
+            "transitionLabel": "返回首页"
+          },
+          {
+            "domId": "nav-short-drama",
+            "targetPageId": "page-short-drama",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-about",
+            "targetPageId": "page-about",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-contact",
+            "targetPageId": "page-contact",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-about",
+      "title": "关于我们",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 2480,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/about.html",
+        "interactions": [
+          {
+            "domId": "cta-contact",
+            "targetPageId": "page-contact",
+            "transitionLabel": "联系我们"
+          },
+          {
+            "domId": "back-home",
+            "targetPageId": "page-index",
+            "hideEdge": true,
+            "transitionLabel": "返回首页"
+          },
+          {
+            "domId": "nav-short-drama",
+            "targetPageId": "page-short-drama",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-contact",
+            "targetPageId": "page-contact",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-contact",
+      "title": "联系合作",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 3100,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/contact.html",
+        "interactions": [
+          {
+            "domId": "back-home",
+            "targetPageId": "page-index",
+            "hideEdge": true,
+            "transitionLabel": "返回首页"
+          },
+          {
+            "domId": "nav-short-drama",
+            "targetPageId": "page-short-drama",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-enterprise",
+            "targetPageId": "page-enterprise-video",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-tourism",
+            "targetPageId": "page-cultural-tourism",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          },
+          {
+            "domId": "nav-about",
+            "targetPageId": "page-about",
+            "hideEdge": true,
+            "transitionLabel": "导航"
+          }
+        ]
+      }
+    },
+    {
+      "id": "image-001",
+      "title": "平台主视觉",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 0,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-main.jpg"
+      }
+    },
+    {
+      "id": "image-002",
+      "title": "短剧制作场景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 620,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/service-short-drama.jpg"
+      }
+    },
+    {
+      "id": "image-003",
+      "title": "企业视频制作",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 1240,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/service-enterprise.jpg"
+      }
+    },
+    {
+      "id": "image-004",
+      "title": "文旅宣传场景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 1860,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/service-tourism.jpg"
+      }
+    },
+    {
+      "id": "image-005",
+      "title": "短剧服务主视觉",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 2480,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-short-drama.jpg"
+      }
+    },
+    {
+      "id": "image-006",
+      "title": "企业视频主视觉",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 3100,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-enterprise.jpg"
+      }
+    },
+    {
+      "id": "image-007",
+      "title": "文旅宣传主视觉",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1750844400000,
+      "canvasData": {
+        "x": 3720,
+        "y": 1379
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-tourism.jpg"
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "AI视频制作服务平台",
+    "designLibrary": null
+  }
+}

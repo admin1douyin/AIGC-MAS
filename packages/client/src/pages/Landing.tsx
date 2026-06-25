@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const LandingPage: React.FC = () => {
   const scrollToSection = (id: string) => {
@@ -32,12 +33,12 @@ const LandingPage: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="btn-secondary text-sm py-2 px-4">
+            <Link to="/login" className="btn-secondary text-sm py-2 px-4">
               登录
-            </button>
-            <button className="btn-primary text-sm py-2 px-4">
+            </Link>
+            <Link to="/register" className="btn-primary text-sm py-2 px-4">
               免费开始
-            </button>
+            </Link>
           </div>
         </div>
       </nav>

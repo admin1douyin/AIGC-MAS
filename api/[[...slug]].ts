@@ -12,6 +12,8 @@ import shortDramaRoutes from '../packages/server/src/routes/shortDrama';
 import corporateRoutes from '../packages/server/src/routes/corporate';
 import tourismRoutes from '../packages/server/src/routes/tourism';
 import statsRoutes from '../packages/server/src/routes/stats';
+import authRoutes from '../packages/server/src/routes/auth';
+import paymentRoutes from '../packages/server/src/routes/payments';
 import { agentEngine } from '../packages/server/src/agents/AgentEngine';
 
 let app: express.Express | null = null;
@@ -40,6 +42,8 @@ async function getApp(): Promise<express.Express> {
   app.use('/api/corporate', corporateRoutes);
   app.use('/api/tourism', tourismRoutes);
   app.use('/api/stats', statsRoutes);
+  app.use('/api/auth', authRoutes);
+  app.use('/api/payments', paymentRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -10,14 +10,15 @@
     "dev": "concurrently -n server,client -c blue,green \"npm run dev -w @aigc-mas/server\" \"npm run dev -w @aigc-mas/client\"",
     "dev:server": "npm run dev -w @aigc-mas/server",
     "dev:client": "npm run dev -w @aigc-mas/client",
-    "build": "npm run build -w @aigc-mas/server && npm run build -w @aigc-mas/client",
+    "build": "npm run build -w @aigc-mas/shared && npm run build -w @aigc-mas/server && npm run build -w @aigc-mas/client",
     "build:server": "npm run build -w @aigc-mas/server",
-    "build:client": "npm run build -w @aigc-mas/client",
+    "build:client": "npm run build -w @aigc-mas/shared && npm run build -w @aigc-mas/client",
     "start": "npm run start -w @aigc-mas/server",
     "db:generate": "npm run db:generate -w @aigc-mas/server",
     "db:push": "npm run db:push -w @aigc-mas/server",
     "db:seed": "npm run db:seed -w @aigc-mas/server",
-    "setup": "npm install && npm run db:generate && npm run db:push && npm run db:seed"
+    "setup": "npm install && npm run db:generate && npm run db:push && npm run db:seed",
+    "vercel:build": "npm run build:client && npm run db:generate"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

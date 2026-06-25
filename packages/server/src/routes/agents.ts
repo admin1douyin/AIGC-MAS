@@ -1,0 +1,68 @@
+import { Router, Request, Response } from 'express';
+import { prisma } from '../lib/prisma';
+import { agentEngine } from '../agents/AgentEngine';
+
+const router = Router();
+
+router.get('/', async (req: Request, res: Response) => {
+  const projectId = req.query.projectId as string;
+  const role = req.query.role as string;
+  const status = req.query.status as string;
+
+  const where: any = {};
+  if (projectId) where.projectId = projectId;
+  if (role) where.role = role;
+  if (status) where.status = status;
+
+  const agents = await prisma.agent.findMany({
+    where,
+    orderBy: { createdAt: 'asc' },
+  });
+
+  res.json({ success: true, data: agents });
+});
+
+router.get('/:id', async (req: Request, res: Response) => {
+  const agent = await prisma.agent.findUnique({
+    where: { id: req.params.id },
+    include: {
+      tasks: { orderBy: { createdAt: 'desc' }, take: 10 },
+      sentMessages: { orderBy: { createdAt: 'desc' }, take: 20 },
+    },
+  });
+
+  if (!agent) {
+    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Agent not found' } });
+  }
+
+  res.json({ success: true, data: agent });
+});
+
+router.get('/:id/messages', async (req: Request, res: Response) => {
+  const agentId = req.params.id;
+  const projectId = req.query.projectId as string;
+
+  const where: any = {
+    OR: [{ fromAgentId: agentId }, { toAgentId: agentId }],
+  };
+  if (projectId) where.projectId = projectId;
+
+  const messages = await prisma.agentMessage.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+    include: {
+      fromAgent: { select: { id: true, name: true, role: true } },
+      toAgent: { select: { id: true, name: true, role: true } },
+    },
+  });
+
+  res.json({ success: true, data: messages.reverse() });
+});
+
+router.get('/registry/list', async (_req: Request, res: Response) => {
+  const registry = agentEngine.getAgentRegistry();
+  res.json({ success: true, data: registry });
+});
+
+export default router;

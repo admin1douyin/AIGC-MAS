@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 import { agentEngine } from '../agents/AgentEngine';
 
 const router = Router();
@@ -27,7 +28,7 @@ const updateProjectSchema = z.object({
   budget: z.number().optional(),
 });
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', optionalAuth, async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const pageSize = parseInt(req.query.pageSize as string) || 10;
   const type = req.query.type as string;
@@ -38,6 +39,11 @@ router.get('/', async (req: Request, res: Response) => {
   if (type) where.type = type;
   if (status) where.status = status;
   if (search) where.name = { contains: search };
+
+  // If user is authenticated, filter by their projects
+  if (req.profile) {
+    where.ownerId = req.profile.id;
+  }
 
   const [projects, total] = await Promise.all([
     prisma.project.findMany({
@@ -64,7 +70,7 @@ router.get('/', async (req: Request, res: Response) => {
   });
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', optionalAuth, async (req: Request, res: Response) => {
   const project = await prisma.project.findUnique({
     where: { id: req.params.id },
     include: {
@@ -90,11 +96,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ success: true, data: project });
 });
 
-router.post('/', validate(createProjectSchema), async (req: Request, res: Response) => {
+router.post('/', requireAuth, validate(createProjectSchema), async (req: Request, res: Response) => {
   const data = req.body;
-
-  const defaultProfile = await prisma.profile.findFirst();
-  const ownerId = defaultProfile?.id || 'system-user-id';
 
   const project = await prisma.project.create({
     data: {
@@ -105,7 +108,7 @@ router.post('/', validate(createProjectSchema), async (req: Request, res: Respon
       tags: data.tags || [],
       estimatedDuration: data.estimatedDuration,
       budget: data.budget,
-      ownerId,
+      ownerId: req.profile!.id,
       status: 'draft',
       progress: 0,
     } as any,

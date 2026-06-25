@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Building, Shield, CreditCard, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -13,13 +13,69 @@ export default function Profile() {
     bio: '',
   });
 
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const result = await response.json();
+      if (result.success && result.data) {
+        setProfile({
+          name: result.data.name || user?.user_metadata?.name || '',
+          phone: result.data.phone || '',
+          company: '',
+          bio: result.data.bio || '',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    }
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('请先登录');
+        return;
+      }
+
+      // Update profile on backend
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          name: profile.name,
+          phone: profile.phone,
+          bio: profile.bio,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error?.message || '保存失败');
+      }
+
+      // Update Supabase auth metadata
+      await supabase.auth.updateUser({
         data: { name: profile.name }
       });
-      if (error) throw error;
+
       alert('保存成功！');
     } catch (error: any) {
       alert(error.message || '保存失败');

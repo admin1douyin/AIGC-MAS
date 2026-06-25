@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import { User } from '@supabase/supabase-js';
 
 export interface AuthUser {
   id: string;
@@ -13,14 +12,14 @@ export const authApi = {
   // Get current user profile from our database
   getProfile: async (): Promise<{ success: boolean; data?: AuthUser; error?: string }> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         return { success: false, error: 'Not authenticated' };
       }
 
       const response = await fetch('/api/auth/profile', {
         headers: {
-          'Authorization': `Bearer ${user.session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       });
 
@@ -34,8 +33,8 @@ export const authApi = {
   // Update user profile
   updateProfile: async (data: Partial<AuthUser>): Promise<{ success: boolean; data?: AuthUser; error?: string }> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         return { success: false, error: 'Not authenticated' };
       }
 
@@ -43,7 +42,7 @@ export const authApi = {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify(data)
       });

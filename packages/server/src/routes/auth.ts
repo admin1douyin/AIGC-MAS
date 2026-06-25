@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { supabaseAdmin } from '../lib/supabase';
 
 const router = Router();
 
@@ -12,29 +13,55 @@ const updateProfileSchema = z.object({
   avatarUrl: z.string().url().optional(),
 });
 
+// Middleware to verify Supabase JWT token
+async function verifyAuth(req: Request): Promise<string | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  try {
+    // Verify the JWT token with Supabase
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+    
+    if (error || !user) {
+      console.error('Auth verification failed:', error);
+      return null;
+    }
+    
+    return user.id;
+  } catch (err) {
+    console.error('Auth verification error:', err);
+    return null;
+  }
+}
+
 // Get current user profile
 router.get('/profile', async (req: Request, res: Response) => {
   try {
-    // In production, get user ID from auth header
-    const authHeader = req.headers.authorization;
-    let userId = 'system-user-id'; // Default for demo
-
-    // Try to get user from Supabase auth
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
-      // In production, verify token with Supabase
-      // For now, we'll use a simpler approach
+    const userId = await verifyAuth(req);
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Not authenticated' }
+      });
     }
 
-    // Find or create default profile
-    let profile = await prisma.profile.findFirst();
-    
+    let profile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    // Create profile if not exists (first time login)
     if (!profile) {
+      const { data: { user } } = await supabaseAdmin.auth.getUser(userId);
       profile = await prisma.profile.create({
         data: {
-          userId: 'demo-user-id',
-          email: 'demo@example.com',
-          name: '演示用户',
+          userId: userId,
+          email: user?.email || 'unknown@example.com',
+          name: user?.user_metadata?.name || user?.email?.split('@')[0] || '用户',
           role: 'creator',
         },
       });
@@ -53,15 +80,27 @@ router.get('/profile', async (req: Request, res: Response) => {
 // Update profile
 router.put('/profile', validate(updateProfileSchema), async (req: Request, res: Response) => {
   try {
+    const userId = await verifyAuth(req);
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Not authenticated' }
+      });
+    }
+
     const { name, phone, bio, avatarUrl } = req.body;
     
-    let profile = await prisma.profile.findFirst();
+    let profile = await prisma.profile.findUnique({
+      where: { userId },
+    });
     
     if (!profile) {
+      // Create profile if not exists
       profile = await prisma.profile.create({
         data: {
-          userId: 'demo-user-id',
-          email: 'demo@example.com',
+          userId,
+          email: 'unknown@example.com',
           name: name || '用户',
           role: 'creator',
           phone,
@@ -73,7 +112,7 @@ router.put('/profile', validate(updateProfileSchema), async (req: Request, res: 
       profile = await prisma.profile.update({
         where: { id: profile.id },
         data: {
-          name: name || profile.name,
+          name: name !== undefined ? name : profile.name,
           phone: phone !== undefined ? phone : profile.phone,
           bio: bio !== undefined ? bio : profile.bio,
           avatarUrl: avatarUrl !== undefined ? avatarUrl : profile.avatarUrl,
@@ -94,7 +133,17 @@ router.put('/profile', validate(updateProfileSchema), async (req: Request, res: 
 // Get subscription info
 router.get('/subscription', async (req: Request, res: Response) => {
   try {
-    let profile = await prisma.profile.findFirst({
+    const userId = await verifyAuth(req);
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Not authenticated' }
+      });
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
       include: { subscription: true }
     });
 
@@ -130,10 +179,21 @@ router.get('/subscription', async (req: Request, res: Response) => {
 // Update subscription
 router.post('/subscription', async (req: Request, res: Response) => {
   try {
+    const userId = await verifyAuth(req);
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Not authenticated' }
+      });
+    }
+
     const { plan } = req.body;
     
-    let profile = await prisma.profile.findFirst();
-    
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
     if (!profile) {
       return res.status(400).json({
         success: false,

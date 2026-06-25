@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { requireAuth } from '../middleware/auth';
 import crypto from 'crypto';
 
 const router = Router();
@@ -19,28 +20,15 @@ function generateOrderNo(): string {
 }
 
 // Create payment order
-router.post('/create-order', validate(createOrderSchema), async (req: Request, res: Response) => {
+router.post('/create-order', requireAuth, validate(createOrderSchema), async (req: Request, res: Response) => {
   try {
     const { plan, amount } = req.body;
     
-    // Get or create profile
-    let profile = await prisma.profile.findFirst();
-    if (!profile) {
-      profile = await prisma.profile.create({
-        data: {
-          userId: 'demo-user-id',
-          email: 'demo@example.com',
-          name: '演示用户',
-          role: 'creator',
-        },
-      });
-    }
-
-    // Generate order
+    // Create order with authenticated user's profile
     const orderNo = generateOrderNo();
     const order = await prisma.order.create({
       data: {
-        profileId: profile.id,
+        profileId: req.profile!.id,
         orderNo,
         type: 'subscription',
         amount: amount / 100, // Convert from cents to yuan
@@ -176,15 +164,10 @@ router.get('/qrcode/:orderNo', async (req: Request, res: Response) => {
 });
 
 // Get user's orders
-router.get('/orders', async (req: Request, res: Response) => {
+router.get('/orders', requireAuth, async (req: Request, res: Response) => {
   try {
-    let profile = await prisma.profile.findFirst();
-    if (!profile) {
-      return res.json({ success: true, data: [] });
-    }
-
     const orders = await prisma.order.findMany({
-      where: { profileId: profile.id },
+      where: { profileId: req.profile!.id },
       orderBy: { createdAt: 'desc' },
     });
 

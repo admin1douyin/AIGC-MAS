@@ -132,7 +132,7 @@ class AgentEngine {
           role: def.role,
           status: 'idle',
           description: def.description,
-          capabilities: def.capabilities,
+          capabilities: def.capabilities as any,
         },
       });
     }
@@ -176,7 +176,7 @@ class AgentEngine {
               role: def.role,
               status: 'idle',
               description: def.description,
-              capabilities: def.capabilities,
+              capabilities: def.capabilities as any,
               projectId,
             },
           });
@@ -199,18 +199,18 @@ class AgentEngine {
       const def = AGENT_REGISTRY.find((a) => a.role === role);
       const taskTitle = this.getTaskTitleForRole(role, project.type);
 
-      const task = await prisma.agentTask.create({
-        data: {
-          projectId,
-          agentRole: role,
-          title: taskTitle,
-          description: def?.description || '',
-          priority: 'high',
-          status: 'pending',
-          dependsOn: prevTaskId ? [prevTaskId] : [],
-          inputData: { phase: i + 1, totalPhases: roles.length },
-        },
-      });
+      const taskData: any = {
+        projectId,
+        agentRole: role,
+        title: taskTitle,
+        description: def?.description || '',
+        priority: 'high',
+        status: 'pending',
+        dependsOn: prevTaskId ? [prevTaskId] : [],
+        inputData: { phase: i + 1, totalPhases: roles.length },
+      };
+
+      const task = await prisma.agentTask.create({ data: taskData });
 
       tasks.push(task);
       prevTaskId = task.id;
@@ -280,17 +280,16 @@ class AgentEngine {
     if (!agent) {
       const def = AGENT_REGISTRY.find((a) => a.role === task.agentRole);
       if (!def) throw new Error(`Agent role not found: ${task.agentRole}`);
-      agent = await prisma.agent.create({
-        data: {
-          name: def.name,
-          role: def.role,
-          status: 'working',
-          description: def.description,
-          capabilities: def.capabilities,
-          projectId: task.projectId,
-          currentTaskId: task.id,
-        },
-      });
+      const agentData: any = {
+        name: def.name,
+        role: def.role,
+        status: 'working',
+        description: def.description,
+        capabilities: def.capabilities,
+        projectId: task.projectId,
+        currentTaskId: task.id,
+      };
+      agent = await prisma.agent.create({ data: agentData });
     } else {
       await prisma.agent.update({
         where: { id: agent.id },

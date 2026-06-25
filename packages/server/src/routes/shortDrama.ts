@@ -53,7 +53,7 @@ router.post('/:projectId/generate-script', async (req: Request, res: Response) =
     data: {
       projectId,
       title: brief.title || `${project.name} - 短剧脚本`,
-      scenes: generatedScenes,
+      scenes: generatedScenes as any,
       totalDuration: generatedScenes.reduce((acc, s) => acc + (s.duration || 0), 0),
       version: 1,
     },

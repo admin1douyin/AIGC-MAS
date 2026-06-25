@@ -52,7 +52,7 @@ router.post('/:projectId/generate-script', async (req: Request, res: Response) =
     data: {
       projectId,
       title: brief.title || `${tourism?.location || project.name} - 文旅宣传片`,
-      scenes,
+      scenes: scenes as any,
       totalDuration: scenes.reduce((acc, s) => acc + (s.duration || 0), 0),
       version: 1,
     },

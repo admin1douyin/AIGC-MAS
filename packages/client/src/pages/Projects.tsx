@@ -5,7 +5,6 @@ import {
   Plus,
   Search,
   Filter,
-  MoreVertical,
   Play,
   Pause,
   Trash2,

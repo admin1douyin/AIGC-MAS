@@ -108,7 +108,7 @@ router.post('/', validate(createProjectSchema), async (req: Request, res: Respon
       ownerId,
       status: 'draft',
       progress: 0,
-    },
+    } as any,
     include: {
       owner: { select: { id: true, name: true, avatarUrl: true } },
     },
@@ -117,9 +117,9 @@ router.post('/', validate(createProjectSchema), async (req: Request, res: Respon
   if (data.type === 'short_drama') {
     await prisma.shortDramaProject.create({ data: { projectId: project.id } });
   } else if (data.type === 'corporate_video') {
-    await prisma.corporateVideoProject.create({ data: { projectId: project.id, keySellingPoints: [] } });
+    await prisma.corporateVideoProject.create({ data: { projectId: project.id, keySellingPoints: [] } as any });
   } else if (data.type === 'tourism_promo') {
-    await prisma.tourismPromoProject.create({ data: { projectId: project.id, attractions: [], culturalHighlights: [] } });
+    await prisma.tourismPromoProject.create({ data: { projectId: project.id, attractions: [], culturalHighlights: [] } as any });
   }
 
   res.status(201).json({ success: true, data: project });

@@ -2,35 +2,221 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
+@layer base {
+  :root {
+    --color-primary: #6C5CE7;
+    --color-primary-hover: #7C6EF0;
+    --color-primary-active: #5A4BD6;
+    --color-primary-light: #A29BFE;
+    --color-primary-bg: rgba(108, 92, 231, 0.08);
+    --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
+    --color-bg: #0A0A0F;
+    --color-bg-elevated: #12121A;
+    --color-bg-surface: #1A1A26;
+    --color-bg-surface-hover: #222233;
+    --color-bg-overlay: rgba(10, 10, 15, 0.85);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-hover: rgba(255, 255, 255, 0.15);
+    --color-border-strong: rgba(255, 255, 255, 0.2);
+    --color-text-primary: #F0F0F5;
+    --color-text-secondary: #9B9BB0;
+    --color-text-tertiary: #6B6B80;
+    --color-text-inverse: #0A0A0F;
+    --color-text-accent: #6C5CE7;
+    --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
+    --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
+    --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
+    --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
+    --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+    --state-success: #00B894;
+    --state-warning: #FDCB6E;
+    --state-error: #E17055;
+    --state-info: #74B9FF;
+    --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .vp-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .vp-heading {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+  }
+
+  .vp-body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .vp-caption {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+  }
+
+  .vp-mono {
+    font-family: var(--font-mono);
+  }
+
+  .vp-gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .vp-glow-border {
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    box-shadow: 0 0 40px rgba(108, 92, 231, 0.15);
+  }
+
+  .vp-glow-border:hover {
+    border-color: rgba(108, 92, 231, 0.5);
+    box-shadow: 0 0 60px rgba(108, 92, 231, 0.25);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background: var(--gradient-primary);
+    transition: all 250ms ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(108, 92, 231, 0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: 1px solid var(--color-border-strong);
+    transition: all 250ms ease;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+
+  .card-surface {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    transition: all 250ms ease;
+  }
+
+  .card-surface:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 0 40px rgba(108, 92, 231, 0.15);
+  }
+
+  .glass-nav {
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    color: var(--color-text-primary);
+  }
+
+  .section-subtitle {
+    color: var(--color-text-secondary);
+    line-height: 1.75;
+  }
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: var(--color-bg-elevated);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-hover);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
 }

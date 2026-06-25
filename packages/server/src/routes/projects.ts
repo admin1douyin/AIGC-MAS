@@ -93,8 +93,8 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', validate(createProjectSchema), async (req: Request, res: Response) => {
   const data = req.body;
 
-  const defaultUser = await prisma.user.findFirst();
-  const ownerId = defaultUser?.id || 'system';
+  const defaultProfile = await prisma.profile.findFirst();
+  const ownerId = defaultProfile?.id || 'system-user-id';
 
   const project = await prisma.project.create({
     data: {

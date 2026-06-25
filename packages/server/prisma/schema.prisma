@@ -3,194 +3,653 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id            String    @id @default(uuid())
-  name          String
-  email         String    @unique
-  role          String    @default("user")
-  avatarUrl     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  projects      Project[] @relation("ProjectOwner")
+enum UserRole {
+  super_admin
+  admin
+  project_manager
+  creator
+  viewer
+}
+
+enum ProjectType {
+  short_drama
+  corporate_video
+  tourism_promo
+}
+
+enum ProjectStatus {
+  draft
+  planning
+  in_production
+  paused
+  in_review
+  completed
+  failed
+  cancelled
+  archived
+}
+
+enum AgentRole {
+  project_manager
+  creative_director
+  script_writer
+  storyboard_artist
+  voice_actor
+  video_editor
+  marketing_strategist
+  brand_analyst
+  culture_researcher
+  music_composer
+  quality_inspector
+  data_analyst
+}
+
+enum AgentStatus {
+  idle
+  working
+  paused
+  error
+}
+
+enum TaskStatus {
+  pending
+  in_progress
+  in_review
+  needs_revision
+  completed
+  failed
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum MessageType {
+  task_assignment
+  status_update
+  question
+  feedback
+  deliverable
+  notification
+  result
+  phase_start
+  phase_complete
+  review_pass
+  review_fail
+  error
+  system
+}
+
+enum AssetType {
+  video
+  image
+  audio
+  document
+}
+
+enum SubscriptionPlan {
+  free
+  pro
+  enterprise
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+  cancelled
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  email     String   @unique
+  name      String
+  avatarUrl String?
+  role      UserRole @default(viewer)
+  phone     String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedProjects      Project[]        @relation("ProjectOwner")
+  projectMemberships ProjectMember[]  @relation("MemberProjects")
+  orgMemberships     OrgMember[]
+  teamMemberships    TeamMember[]
+  comments           ProjectComment[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  orders             Order[]
+  subscription       Subscription?
+
+  @@map("profiles")
+}
+
+model Organization {
+  id          String           @id @default(uuid())
+  name        String
+  slug        String           @unique
+  logoUrl     String?
+  description String?
+  plan        SubscriptionPlan @default(free)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  teams         Team[]
+  members       OrgMember[]
+  projects      Project[]
+  brandProfiles BrandProfile[]
+
+  @@map("organizations")
+}
+
+model Team {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  members  TeamMember[]
+  projects Project[]
+
+  @@map("teams")
+}
+
+model OrgMember {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  profileId      String
+  profile        Profile      @relation(fields: [profileId], references: [id])
+  role           UserRole     @default(viewer)
+  joinedAt       DateTime     @default(now())
+
+  @@unique([organizationId, profileId])
+  @@map("org_members")
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  role      String?
+  joinedAt  DateTime @default(now())
+
+  @@unique([teamId, profileId])
+  @@map("team_members")
 }
 
 model Project {
-  id              String   @id @default(uuid())
-  name            String
-  type            String
-  status          String   @default("draft")
-  description     String?
-  brief           String?
-  progress        Int      @default(0)
-  ownerId         String
-  owner           User     @relation("ProjectOwner", fields: [ownerId], references: [id])
-  tags            String?
+  id                String        @id @default(uuid())
+  name              String
+  type              ProjectType
+  status            ProjectStatus @default(draft)
+  description       String?
+  brief             String?
+  progress          Int           @default(0)
+  currentPhase      String?
+  ownerId           String
+  owner             Profile       @relation("ProjectOwner", fields: [ownerId], references: [id])
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  teamId            String?
+  team              Team?         @relation(fields: [teamId], references: [id])
+  tags              String?
   estimatedDuration Int?
-  actualDuration  Int?
-  budget          Float?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  agents          Agent[]
-  tasks           AgentTask[]
-  messages        AgentMessage[]
-  scripts         VideoScript[]
-  storyboards     Storyboard[]
-  assets          VideoAsset[]
-  finalVideos     FinalVideo[]
-  shortDrama      ShortDramaProject?
-  corporateVideo  CorporateVideoProject?
-  tourismPromo    TourismPromoProject?
+  actualDuration    Int?
+  budget            Float?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  errorMessage      String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  members        ProjectMember[]
+  agents         Agent[]
+  tasks          AgentTask[]
+  messages       AgentMessage[]
+  scripts        VideoScript[]
+  storyboards    Storyboard[]
+  assets         VideoAsset[]
+  finalVideos    FinalVideo[]
+  comments       ProjectComment[]
+  shortDrama     ShortDramaProject?
+  corporateVideo CorporateVideoProject?
+  tourismPromo   TourismPromoProject?
+  notifications  Notification[]
+
+  @@index([ownerId])
+  @@index([type])
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  profileId String
+  profile   Profile  @relation("MemberProjects", fields: [profileId], references: [id])
+  role      String   @default("viewer")
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, profileId])
+  @@map("project_members")
+}
+
+model ProjectComment {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  authorId  String
+  author    Profile  @relation(fields: [authorId], references: [id])
+  content   String
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("project_comments")
 }
 
 model Agent {
-  id              String   @id @default(uuid())
-  name            String
-  role            String
-  status          String   @default("idle")
-  description     String?
-  capabilities    String?
-  currentTaskId   String?
-  projectId       String?
-  project         Project? @relation(fields: [projectId], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  tasks           AgentTask[] @relation("AgentTasks")
-  sentMessages    AgentMessage[] @relation("SentMessages")
+  id             String      @id @default(uuid())
+  name           String
+  role           AgentRole
+  status         AgentStatus @default(idle)
+  description    String?
+  capabilities   String?
+  personality    String?
+  avatarUrl      String?
+  currentTaskId  String?
+  projectId      String?
+  project        Project?    @relation(fields: [projectId], references: [id])
+  completedTasks Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tasks            AgentTask[]    @relation("AgentTasks")
+  sentMessages     AgentMessage[] @relation("SentMessages")
   receivedMessages AgentMessage[] @relation("ReceivedMessages")
+
+  @@index([projectId])
+  @@index([role])
+  @@map("agents")
 }
 
 model AgentTask {
-  id              String   @id @default(uuid())
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  agentId         String?
-  agent           Agent?   @relation("AgentTasks", fields: [agentId], references: [id])
-  agentRole       String
-  title           String
-  description     String?
-  status          String   @default("pending")
-  priority        String   @default("medium")
-  inputData       String?
-  outputData      String?
-  dependsOn       String?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  messages        AgentMessage[]
+  id             String       @id @default(uuid())
+  projectId      String
+  project        Project      @relation(fields: [projectId], references: [id])
+  agentId        String?
+  agent          Agent?       @relation("AgentTasks", fields: [agentId], references: [id])
+  agentRole      AgentRole
+  title          String
+  description    String?
+  phase          String?
+  phaseIndex     Int?
+  status         TaskStatus   @default(pending)
+  priority       TaskPriority @default(medium)
+  iteration      Int          @default(1)
+  maxIterations  Int          @default(1)
+  requiresReview Boolean      @default(false)
+  isParallel     Boolean      @default(false)
+  feedback       String?
+  reviewFeedback String?
+  reviewScore    Float?
+  orderIndex     Int?
+  stage          String?
+  inputData      String?
+  outputData     String?
+  dependsOn      String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  dueDate        DateTime?
+  qualityScore   Float?
+  reviewNotes    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  messages AgentMessage[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([agentId])
+  @@map("agent_tasks")
 }
 
 model AgentMessage {
-  id              String   @id @default(uuid())
-  fromAgentId     String
-  fromAgent       Agent    @relation("SentMessages", fields: [fromAgentId], references: [id])
-  toAgentId       String?
-  toAgent         Agent?   @relation("ReceivedMessages", fields: [toAgentId], references: [id])
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  taskId          String?
-  task            AgentTask? @relation(fields: [taskId], references: [id])
-  content         String
-  messageType     String
-  read            Boolean  @default(false)
-  createdAt       DateTime @default(now())
+  id          String      @id @default(uuid())
+  fromAgentId String
+  fromAgent   Agent       @relation("SentMessages", fields: [fromAgentId], references: [id])
+  toAgentId   String?
+  toAgent     Agent?      @relation("ReceivedMessages", fields: [toAgentId], references: [id])
+  projectId   String
+  project     Project     @relation(fields: [projectId], references: [id])
+  taskId      String?
+  task        AgentTask?  @relation(fields: [taskId], references: [id])
+  content     String
+  messageType MessageType @default(system)
+  metadata    String?
+  read        Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+
+  @@index([projectId])
+  @@index([taskId])
+  @@index([fromAgentId])
+  @@map("agent_messages")
 }
 
 model VideoScript {
-  id              String   @id @default(uuid())
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  title           String
-  scenes          String?
-  totalDuration   Int      @default(0)
-  version         Int      @default(1)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  storyboards     Storyboard[]
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  title         String
+  logline       String?
+  scenes        String?
+  totalDuration Int      @default(0)
+  version       Int      @default(1)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  storyboards Storyboard[]
+
+  @@index([projectId])
+  @@map("video_scripts")
 }
 
 model Storyboard {
-  id              String   @id @default(uuid())
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  scriptId        String
-  script          VideoScript @relation(fields: [scriptId], references: [id])
-  frames          String?
-  createdAt       DateTime @default(now())
+  id        String      @id @default(uuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id])
+  scriptId  String
+  script    VideoScript @relation(fields: [scriptId], references: [id])
+  frames    String?
+  version   Int         @default(1)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([projectId])
+  @@map("storyboards")
 }
 
 model VideoAsset {
-  id              String   @id @default(uuid())
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  type            String
-  name            String
-  url             String
-  duration        Int?
-  metadata        String?
-  createdAt       DateTime @default(now())
+  id           String    @id @default(uuid())
+  projectId    String
+  project      Project   @relation(fields: [projectId], references: [id])
+  type         AssetType
+  name         String
+  url          String
+  thumbnailUrl String?
+  duration     Int?
+  size         Int?
+  metadata     String?
+  tags         String?
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([type])
+  @@map("video_assets")
 }
 
 model FinalVideo {
-  id              String   @id @default(uuid())
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id])
-  title           String
-  url             String
-  thumbnailUrl    String?
-  duration        Int
-  resolution      String
-  format          String
-  size            Int
-  version         Int      @default(1)
-  createdAt       DateTime @default(now())
+  id           String   @id @default(uuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  title        String
+  description  String?
+  url          String
+  thumbnailUrl String?
+  duration     Int
+  resolution   String
+  format       String
+  size         Int
+  version      Int      @default(1)
+  qualityScore Float?
+  isFinal      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+  @@map("final_videos")
 }
 
 model ShortDramaProject {
-  id              String   @id @default(uuid())
-  projectId       String   @unique
-  project         Project  @relation(fields: [projectId], references: [id])
-  genre           String?
-  episodeCount    Int      @default(1)
-  episodeDuration Int?
-  mainCharacters  String?
-  plotSummary     String?
-  tone            String?
-  targetPlatform  String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(uuid())
+  projectId        String   @unique
+  project          Project  @relation(fields: [projectId], references: [id])
+  genre            String?
+  subGenre         String?
+  episodeCount     Int      @default(1)
+  episodeDuration  Int?
+  totalEpisodes    Int      @default(0)
+  mainCharacters   String?
+  plotSummary      String?
+  tone             String?
+  targetPlatform   String?
+  monetizationType String?
+  targetAudience   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  episodes   DramaEpisode[]
+  characters DramaCharacter[]
+
+  @@map("short_drama_projects")
+}
+
+model DramaEpisode {
+  id            String            @id @default(uuid())
+  shortDramaId  String
+  shortDrama    ShortDramaProject @relation(fields: [shortDramaId], references: [id])
+  episodeNumber Int
+  title         String
+  synopsis      String?
+  duration      Int?
+  status        String            @default("draft")
+  scriptUrl     String?
+  videoUrl      String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([shortDramaId, episodeNumber])
+  @@map("drama_episodes")
+}
+
+model DramaCharacter {
+  id           String            @id @default(uuid())
+  shortDramaId String
+  shortDrama   ShortDramaProject @relation(fields: [shortDramaId], references: [id])
+  name         String
+  role         String?
+  description  String?
+  personality  String?
+  appearance   String?
+  avatarUrl    String?
+  createdAt    DateTime          @default(now())
+
+  @@map("drama_characters")
 }
 
 model CorporateVideoProject {
-  id              String   @id @default(uuid())
-  projectId       String   @unique
-  project         Project  @relation(fields: [projectId], references: [id])
-  companyName     String?
-  industry        String?
-  videoType       String?
-  brandGuidelines String?
-  keySellingPoints String?
-  callToAction    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  projectId            String   @unique
+  project              Project  @relation(fields: [projectId], references: [id])
+  companyName          String?
+  industry             String?
+  videoType            String?
+  brandGuidelines      String?
+  keySellingPoints     String?
+  callToAction         String?
+  targetAudience       String?
+  marketingGoals       String?
+  distributionChannels String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("corporate_video_projects")
+}
+
+model BrandProfile {
+  id             String        @id @default(uuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  brandName      String
+  logoUrl        String?
+  tagline        String?
+  mission        String?
+  vision         String?
+  values         String?
+  toneOfVoice    String?
+  colorPalette   String?
+  typography     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("brand_profiles")
 }
 
 model TourismPromoProject {
-  id              String   @id @default(uuid())
-  projectId       String   @unique
-  project         Project  @relation(fields: [projectId], references: [id])
-  location        String?
-  attractions     String?
+  id                 String   @id @default(uuid())
+  projectId          String   @unique
+  project            Project  @relation(fields: [projectId], references: [id])
+  location           String?
+  region             String?
+  attractions        String?
   culturalHighlights String?
-  targetTravelers String?
-  season          String?
-  durationDays    Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  targetTravelers    String?
+  season             String?
+  durationDays       Int?
+  seriesCount        Int      @default(1)
+  theme              String?
+  languages          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  resources TourismResource[]
+
+  @@map("tourism_promo_projects")
+}
+
+model TourismResource {
+  id          String              @id @default(uuid())
+  tourismId   String
+  tourism     TourismPromoProject @relation(fields: [tourismId], references: [id])
+  name        String
+  type        String
+  description String?
+  location    String?
+  imageUrl    String?
+  metadata    String?
+  createdAt   DateTime            @default(now())
+
+  @@map("tourism_resources")
+}
+
+model Subscription {
+  id                 String           @id @default(uuid())
+  profileId          String           @unique
+  profile            Profile          @relation(fields: [profileId], references: [id])
+  plan               SubscriptionPlan @default(free)
+  status             String           @default("active")
+  credits            Int              @default(0)
+  usedCredits        Int              @default(0)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  profileId     String
+  profile       Profile     @relation(fields: [profileId], references: [id])
+  orderNo       String      @unique
+  type          String
+  amount        Float
+  currency      String      @default("CNY")
+  status        OrderStatus @default(pending)
+  plan          String?
+  credits       Int?
+  paymentMethod String?
+  paidAt        DateTime?
+  expiredAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([profileId])
+  @@index([status])
+  @@map("orders")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  type      String
+  title     String
+  content   String?
+  read      Boolean  @default(false)
+  actionUrl String?
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+  @@index([read])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  profileId    String?
+  profile      Profile? @relation(fields: [profileId], references: [id])
+  action       String
+  resourceType String
+  resourceId   String
+  oldValue     String?
+  newValue     String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([profileId])
+  @@index([action])
+  @@index([resourceType])
+  @@map("audit_logs")
+}
+
+model ProjectTemplate {
+  id           String      @id @default(uuid())
+  name         String
+  type         ProjectType
+  description  String?
+  thumbnailUrl String?
+  config       String?
+  isPublic     Boolean     @default(false)
+  createdBy    String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([type])
+  @@map("project_templates")
 }

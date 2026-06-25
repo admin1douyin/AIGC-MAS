@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIGC短剧制作 — VideoAI</title>
+    <style id="theme-vars">
+/* ========================================
+   Brand Design System — AI Video Platform
+   Multi-Agent Service for Video Production
+   ======================================== */
+
+:root {
+  /* === Brand Colors === */
+  --color-primary: #6C5CE7;
+  --color-primary-hover: #7C6EF0;
+  --color-primary-active: #5A4BD6;
+  --color-primary-light: #A29BFE;
+  --color-primary-bg: rgba(108, 92, 231, 0.08);
+  --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
+
+  /* === Neutral Palette (Dark Theme) === */
+  --color-bg: #0A0A0F;
+  --color-bg-elevated: #12121A;
+  --color-bg-surface: #1A1A26;
+  --color-bg-surface-hover: #222233;
+  --color-bg-overlay: rgba(10, 10, 15, 0.85);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* === Text Colors === */
+  --color-text-primary: #F0F0F5;
+  --color-text-secondary: #9B9BB0;
+  --color-text-tertiary: #6B6B80;
+  --color-text-inverse: #0A0A0F;
+  --color-text-accent: #6C5CE7;
+
+  /* === Gradient Accents === */
+  --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
+  --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
+  --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
+  --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
+  --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+
+  /* === State Colors === */
+  --state-success: #00B894;
+  --state-warning: #FDCB6E;
+  --state-error: #E17055;
+  --state-info: #74B9FF;
+
+  /* === Typography === */
+  --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* === Spacing === */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* === Radius === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.15);
+  --shadow-glow-strong: 0 0 60px rgba(108, 92, 231, 0.25);
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* === Z-Index === */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* === Typography Classes === */
+.vp-display { font-family: var(--font-display); font-weight: 700; letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); }
+.vp-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
+.vp-body { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-normal); }
+.vp-caption { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+.vp-mono { font-family: var(--font-mono); }
+
+/* === Gradient Text Utility === */
+.vp-gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Glow Effects === */
+.vp-glow-border {
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  box-shadow: var(--shadow-glow);
+}
+
+.vp-glow-border:hover {
+  border-color: rgba(108, 92, 231, 0.5);
+  box-shadow: var(--shadow-glow-strong);
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body);">
+
+  <!-- ===== HEADER / NAVBAR ===== -->
+  <header class="fixed top-0 left-0 right-0 z-[200]" style="background: rgba(10,10,15,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <nav class="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between" style="font-family: var(--font-body);">
+
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 shrink-0">
+        <span class="text-xl font-bold tracking-tight" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">VideoAI</span>
+      </a>
+
+      <!-- Center Navigation (Desktop) -->
+      <ul class="hidden md:flex items-center gap-8">
+        <li>
+          <a href="#" data-nav-key="index" data-dom-id="back-home"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            首页
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav-key="short-drama" data-active="true"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            短剧制作
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav-key="enterprise-video" data-dom-id="nav-enterprise"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            企业视频
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav-key="cultural-tourism" data-dom-id="nav-tourism"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            文旅宣传
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav-key="about" data-dom-id="nav-about"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            关于我们
+          </a>
+        </li>
+        <li>
+          <a href="#" data-nav-key="contact" data-dom-id="nav-contact"
+             class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+             style="color: var(--color-text-secondary);"
+             onmouseover="this.style.color='var(--color-text-primary)'"
+             onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+            联系合作
+          </a>
+        </li>
+      </ul>
+
+      <!-- Right Side: CTA + Mobile Toggle -->
+      <div class="flex items-center gap-4">
+        <!-- CTA Button (Desktop) -->
+        <a href="#"
+           class="hidden md:inline-flex items-center px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-[250ms]"
+           style="background: linear-gradient(135deg, #6C5CE7, #74B9FF);"
+           onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'"
+           onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
+          开始合作
+        </a>
+
+        <!-- Mobile Hamburger -->
+        <button id="mobile-menu-toggle"
+                class="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg transition-colors duration-[250ms]"
+                style="color: var(--color-text-primary);"
+                aria-label="菜单"
+                onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Panel -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-6 pt-2" style="background: rgba(10,10,15,0.95); border-top: 1px solid rgba(255,255,255,0.06);">
+      <ul class="flex flex-col gap-1">
+        <li><a href="#" data-nav-key="index" data-dom-id="back-home" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">首页</a></li>
+        <li><a href="#" data-nav-key="short-drama" data-active="true" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">短剧制作</a></li>
+        <li><a href="#" data-nav-key="enterprise-video" data-dom-id="nav-enterprise" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">企业视频</a></li>
+        <li><a href="#" data-nav-key="cultural-tourism" data-dom-id="nav-tourism" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">文旅宣传</a></li>
+        <li><a href="#" data-nav-key="about" data-dom-id="nav-about" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">关于我们</a></li>
+        <li><a href="#" data-nav-key="contact" data-dom-id="nav-contact" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">联系合作</a></li>
+      </ul>
+      <div class="mt-4">
+        <a href="#" class="flex items-center justify-center px-5 py-3 rounded-lg text-sm font-semibold text-white" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF);">开始合作</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav Spacer -->
+  <div class="h-16"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1">
+
+    <!-- ===== Service Hero ===== -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="vp-display text-4xl md:text-5xl lg:text-6xl mb-6">
+          <span class="warm-gradient-text">AIGC短剧制作</span>
+        </h1>
+        <p class="vp-body text-lg md:text-xl mb-10" style="color: var(--color-text-secondary); max-width: 560px; margin-left: auto; margin-right: auto;">
+          从剧本创意到成片交付，AI全链路赋能短剧生产，让好故事更快被看见
+        </p>
+        <a href="#" data-dom-id="cta-enterprise"
+           class="cta-btn">
+          获取方案
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== Capabilities Grid (核心能力) ===== -->
+    <section class="py-20 md:py-24">
+      <div class="max-w-[1280px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="vp-heading text-3xl md:text-4xl mb-4" style="color: var(--color-text-primary);">核心能力</h2>
+          <p class="vp-body text-base" style="color: var(--color-text-secondary); max-width: 520px; margin: 0 auto;">
+            六大AI核心能力，覆盖短剧制作全流程
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Card 1: AI剧本生成 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">AI剧本生成</h3>
+            <p class="vp-caption text-sm">基于提示词智能创作剧本，支持多类型题材，快速生成完整故事大纲与分集脚本</p>
+          </div>
+
+          <!-- Card 2: 智能分镜设计 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">智能分镜设计</h3>
+            <p class="vp-caption text-sm">AI自动解析剧本生成专业分镜，包含镜头语言、构图建议与场景描述</p>
+          </div>
+
+          <!-- Card 3: 虚拟角色演绎 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">虚拟角色演绎</h3>
+            <p class="vp-caption text-sm">数字人角色库与自定义形象，AI驱动表情动作，实现逼真的虚拟角色表演</p>
+          </div>
+
+          <!-- Card 4: 自动场景合成 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">自动场景合成</h3>
+            <p class="vp-caption text-sm">智能合成角色与背景场景，自动处理光影、景深与特效，一键生成高质量画面</p>
+          </div>
+
+          <!-- Card 5: 智能配音配乐 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">智能配音配乐</h3>
+            <p class="vp-caption text-sm">多风格AI配音与情感化语音合成，自动匹配背景音乐，营造沉浸式视听体验</p>
+          </div>
+
+          <!-- Card 6: 一键成片输出 -->
+          <div class="capability-card">
+            <div class="capability-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="vp-heading text-lg mb-2" style="color: var(--color-text-primary);">一键成片输出</h3>
+            <p class="vp-caption text-sm">自动渲染合成、字幕叠加与格式适配，支持多平台分辨率一键导出</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Workflow Steps (制作流程) ===== -->
+    <section class="py-20 md:py-24" style="background: var(--color-bg-elevated);">
+      <div class="max-w-[1280px] mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="vp-heading text-3xl md:text-4xl mb-4" style="color: var(--color-text-primary);">制作流程</h2>
+          <p class="vp-body text-base" style="color: var(--color-text-secondary); max-width: 520px; margin: 0 auto;">
+            四步完成从创意到成片的高效转化
+          </p>
+        </div>
+
+        <div class="workflow-container max-w-4xl mx-auto">
+          <!-- Gradient connecting line -->
+          <div class="workflow-line hidden md:block"></div>
+
+          <!-- Step 1 -->
+          <div class="workflow-step">
+            <div class="step-badge">1</div>
+            <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">需求沟通</h3>
+            <p class="vp-caption text-sm">深入了解创意愿景，明确题材风格、目标受众与交付标准</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="workflow-step">
+            <div class="step-badge">2</div>
+            <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">AI创作</h3>
+            <p class="vp-caption text-sm">多智能体协同生产，剧本、分镜、角色、场景并行生成</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="workflow-step">
+            <div class="step-badge">3</div>
+            <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">精修调整</h3>
+            <p class="vp-caption text-sm">专业团队审核精修，优化画面细节、音效节奏与叙事节奏</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="workflow-step">
+            <div class="step-badge">4</div>
+            <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">成片交付</h3>
+            <p class="vp-caption text-sm">多格式成片输出，适配各平台发布需求，快速上线</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Case Showcase (案例展示) ===== -->
+    <section class="py-20 md:py-24">
+      <div class="max-w-[1280px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="vp-heading text-3xl md:text-4xl mb-4" style="color: var(--color-text-primary);">案例展示</h2>
+          <p class="vp-body text-base" style="color: var(--color-text-secondary); max-width: 520px; margin: 0 auto;">
+            探索我们已交付的优质短剧作品
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Case 1 -->
+          <div class="case-card">
+            <div class="case-thumb">
+              <div class="play-icon">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="genre-tag">都市情感</span>
+              </div>
+              <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">《逆光而行》</h3>
+              <p class="vp-caption text-sm">讲述都市青年在逆境中追寻梦想的温暖故事，AI全流程制作，上线首周播放量突破500万</p>
+            </div>
+          </div>
+
+          <!-- Case 2 -->
+          <div class="case-card">
+            <div class="case-thumb">
+              <div class="play-icon">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="genre-tag">古装玄幻</span>
+              </div>
+              <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">《云隐仙踪》</h3>
+              <p class="vp-caption text-sm">AI生成东方玄幻世界观与角色，配合虚拟场景合成，打造沉浸式古风短剧体验</p>
+            </div>
+          </div>
+
+          <!-- Case 3 -->
+          <div class="case-card">
+            <div class="case-thumb">
+              <div class="play-icon">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="genre-tag">悬疑推理</span>
+              </div>
+              <h3 class="vp-heading text-base mb-2" style="color: var(--color-text-primary);">《第七日》</h3>
+              <p class="vp-caption text-sm">AI辅助剧本创作与分镜设计，紧凑叙事节奏配合智能配乐，悬疑氛围拉满</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Service CTA ===== -->
+    <section class="py-20 md:py-24">
+      <div class="max-w-[1280px] mx-auto px-6">
+        <div class="cta-section text-center py-16 px-8">
+          <h2 class="vp-heading text-2xl md:text-3xl mb-4" style="color: var(--color-text-primary);">让AI为你的短剧创意加速</h2>
+          <p class="vp-body text-base mb-8" style="color: var(--color-text-secondary); max-width: 480px; margin: 0 auto 2rem;">
+            无论你是内容创作者还是品牌方，我们都能为你提供专业的AIGC短剧制作服务
+          </p>
+          <a href="#" data-dom-id="nav-contact" class="cta-btn">
+            立即咨询
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background: var(--color-bg); border-top: 1px solid rgba(255,255,255,0.06);" class="mt-auto">
+    <div class="max-w-[1280px] mx-auto px-6 py-16">
+      <!-- 4-Column Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+
+        <!-- Column 1: Brand Info -->
+        <div>
+          <a href="#" class="inline-block mb-4">
+            <span class="text-xl font-bold tracking-tight" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">VideoAI</span>
+          </a>
+          <p class="text-sm leading-relaxed" style="color: var(--color-text-secondary); font-family: var(--font-body);">
+            专注于AI驱动的视频制作服务，为企业和个人提供高效、专业的视频内容解决方案。从短剧到企业宣传片，用AI技术重新定义视频创作。
+          </p>
+        </div>
+
+        <!-- Column 2: 服务项目 -->
+        <div>
+          <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">服务项目</h4>
+          <ul class="space-y-3">
+            <li><a href="#" data-nav-key="short-drama" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">短剧制作</a></li>
+            <li><a href="#" data-nav-key="enterprise-video" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">企业视频</a></li>
+            <li><a href="#" data-nav-key="cultural-tourism" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">文旅宣传</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: 关于我们 -->
+        <div>
+          <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">关于我们</h4>
+          <ul class="space-y-3">
+            <li><a href="#" data-nav-key="about" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">关于我们</a></li>
+            <li><a href="#" data-nav-key="contact" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">联系合作</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: 联系方式 -->
+        <div>
+          <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">联系方式</h4>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span class="text-sm" style="color: var(--color-text-secondary);">contact@videoai.com</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              <span class="text-sm" style="color: var(--color-text-secondary);">400-888-0000</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span class="text-sm" style="color: var(--color-text-secondary);">北京市朝阳区科技园区A座</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="mt-12 pt-8" style="border-top: 1px solid rgba(255,255,255,0.06);">
+        <p class="text-center text-xs" style="color: var(--color-text-tertiary); font-family: var(--font-body);">
+          &copy; 2025 VideoAI. All rights reserved. 保留所有权利。
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== Active Nav Script ===== -->
+  <script>
+    // Set active nav item for short-drama page
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+      link.classList.remove('nav-active');
+    });
+    var activeLink = document.querySelector('[data-nav-key="short-drama"][data-active="true"]');
+    if (activeLink) {
+      activeLink.classList.add('nav-active');
+    }
+  </script>
+
+
+    <style>
+    /* ========================================
+       Brand Design System — AI Video Platform
+       Multi-Agent Service for Video Production
+       ======================================== */
+
+    :root {
+      /* === Brand Colors === */
+      --color-primary: #6C5CE7;
+      --color-primary-hover: #7C6EF0;
+      --color-primary-active: #5A4BD6;
+      --color-primary-light: #A29BFE;
+      --color-primary-bg: rgba(108, 92, 231, 0.08);
+      --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
+
+      /* === Neutral Palette (Dark Theme) === */
+      --color-bg: #0A0A0F;
+      --color-bg-elevated: #12121A;
+      --color-bg-surface: #1A1A26;
+      --color-bg-surface-hover: #222233;
+      --color-bg-overlay: rgba(10, 10, 15, 0.85);
+      --color-border: rgba(255, 255, 255, 0.08);
+      --color-border-hover: rgba(255, 255, 255, 0.15);
+      --color-border-strong: rgba(255, 255, 255, 0.2);
+
+      /* === Text Colors === */
+      --color-text-primary: #F0F0F5;
+      --color-text-secondary: #9B9BB0;
+      --color-text-tertiary: #6B6B80;
+      --color-text-inverse: #0A0A0F;
+      --color-text-accent: #6C5CE7;
+
+      /* === Gradient Accents === */
+      --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
+      --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
+      --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
+      --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
+      --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+
+      /* === State Colors === */
+      --state-success: #00B894;
+      --state-warning: #FDCB6E;
+      --state-error: #E17055;
+      --state-info: #74B9FF;
+
+      /* === Typography === */
+      --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --text-4xl: 2.25rem;
+      --text-5xl: 3rem;
+      --text-6xl: 3.75rem;
+
+      --leading-tight: 1.2;
+      --leading-snug: 1.35;
+      --leading-normal: 1.6;
+      --leading-relaxed: 1.75;
+
+      --tracking-tight: -0.02em;
+      --tracking-normal: 0;
+      --tracking-wide: 0.02em;
+
+      /* === Spacing === */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --space-24: 6rem;
+      --space-32: 8rem;
+
+      /* === Radius === */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 9999px;
+
+      /* === Shadows === */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+      --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.15);
+      --shadow-glow-strong: 0 0 60px rgba(108, 92, 231, 0.25);
+
+      /* === Transitions === */
+      --transition-fast: 150ms ease;
+      --transition-base: 250ms ease;
+      --transition-slow: 400ms ease;
+
+      /* === Z-Index === */
+      --z-dropdown: 100;
+      --z-sticky: 200;
+      --z-overlay: 300;
+      --z-modal: 400;
+      --z-toast: 500;
+    }
+
+    /* === Typography Classes === */
+    .vp-display { font-family: var(--font-display); font-weight: 700; letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); }
+    .vp-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
+    .vp-body { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-normal); }
+    .vp-caption { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+    .vp-mono { font-family: var(--font-mono); }
+
+    /* === Gradient Text Utility === */
+    .vp-gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* === Glow Effects === */
+    .vp-glow-border {
+      border: 1px solid rgba(108, 92, 231, 0.3);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .vp-glow-border:hover {
+      border-color: rgba(108, 92, 231, 0.5);
+      box-shadow: var(--shadow-glow-strong);
+    }
+
+    /* === Page-specific Styles === */
+    .hero-section {
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background-image: url("../assets/image_4_yi19x4.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10,10,15,0.7) 0%, rgba(10,10,15,0.85) 60%, rgba(10,10,15,1) 100%);
+      z-index: 1;
+    }
+
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(225,112,85,0.12) 0%, rgba(108,92,231,0.08) 100%);
+      z-index: 2;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      max-width: 720px;
+      padding: 0 1.5rem;
+    }
+
+    .warm-gradient-text {
+      background: var(--gradient-warm);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Capability Cards */
+    .capability-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .capability-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-warm);
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .capability-card:hover {
+      border-color: rgba(225,112,85,0.3);
+      background: var(--color-bg-surface-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(225,112,85,0.1);
+    }
+
+    .capability-card:hover::before {
+      opacity: 1;
+    }
+
+    .capability-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(225,112,85,0.1);
+      color: #E17055;
+      margin-bottom: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    /* Workflow Steps */
+    .workflow-container {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0;
+    }
+
+    .workflow-line {
+      position: absolute;
+      top: 28px;
+      left: calc(12.5% + 16px);
+      right: calc(12.5% + 16px);
+      height: 2px;
+      background: linear-gradient(90deg, #E17055 0%, #FDCB6E 50%, #6C5CE7 100%);
+      z-index: 0;
+    }
+
+    .workflow-step {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      text-align: center;
+      padding: 0 0.5rem;
+    }
+
+    .step-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gradient-warm);
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 4px 16px rgba(225,112,85,0.3);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .workflow-step:hover .step-badge {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(225,112,85,0.4);
+    }
+
+    /* Case Cards */
+    .case-card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-base);
+    }
+
+    .case-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--color-border-hover);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .case-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, rgba(225,112,85,0.15) 0%, rgba(108,92,231,0.15) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .case-thumb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(10,10,15,0.6) 100%);
+    }
+
+    .play-icon {
+      position: relative;
+      z-index: 1;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-base);
+    }
+
+    .case-card:hover .play-icon {
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.1);
+    }
+
+    .genre-tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      background: rgba(225,112,85,0.12);
+      color: #E17055;
+      border: 1px solid rgba(225,112,85,0.2);
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(225,112,85,0.06) 0%, rgba(108,92,231,0.06) 100%);
+      border: 1px solid rgba(225,112,85,0.12);
+      border-radius: var(--radius-xl);
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 2rem;
+      border-radius: var(--radius-lg);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: white;
+      background: var(--gradient-warm);
+      transition: all var(--transition-base);
+      text-decoration: none;
+    }
+
+    .cta-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(225,112,85,0.3);
+    }
+
+    /* Nav active */
+    .nav-active {
+      color: var(--color-primary) !important;
+    }
+    .nav-active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--color-primary);
+    }
+
+    /* Responsive workflow */
+    @media (max-width: 767px) {
+      .workflow-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      .workflow-line {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        right: auto;
+        width: 2px;
+        height: auto;
+        transform: translateX(-50%);
+      }
+      .workflow-step {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 1rem;
+        width: 100%;
+        max-width: 320px;
+      }
+      .step-badge {
+        margin: 0;
+        flex-shrink: 0;
+      }
+    }
+  </style>
+</body>
+</html>

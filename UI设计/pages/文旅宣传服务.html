@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文旅宣传服务</title>
+    <style id="theme-vars">
+/* ========================================
+   Brand Design System — AI Video Platform
+   Multi-Agent Service for Video Production
+   ======================================== */
+
+:root {
+  /* === Brand Colors === */
+  --color-primary: #6C5CE7;
+  --color-primary-hover: #7C6EF0;
+  --color-primary-active: #5A4BD6;
+  --color-primary-light: #A29BFE;
+  --color-primary-bg: rgba(108, 92, 231, 0.08);
+  --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
+
+  /* === Neutral Palette (Dark Theme) === */
+  --color-bg: #0A0A0F;
+  --color-bg-elevated: #12121A;
+  --color-bg-surface: #1A1A26;
+  --color-bg-surface-hover: #222233;
+  --color-bg-overlay: rgba(10, 10, 15, 0.85);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* === Text Colors === */
+  --color-text-primary: #F0F0F5;
+  --color-text-secondary: #9B9BB0;
+  --color-text-tertiary: #6B6B80;
+  --color-text-inverse: #0A0A0F;
+  --color-text-accent: #6C5CE7;
+
+  /* === Gradient Accents === */
+  --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
+  --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
+  --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
+  --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
+  --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
+
+  /* === State Colors === */
+  --state-success: #00B894;
+  --state-warning: #FDCB6E;
+  --state-error: #E17055;
+  --state-info: #74B9FF;
+
+  /* === Typography === */
+  --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* === Spacing === */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* === Radius === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.15);
+  --shadow-glow-strong: 0 0 60px rgba(108, 92, 231, 0.25);
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* === Z-Index === */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* === Typography Classes === */
+.vp-display { font-family: var(--font-display); font-weight: 700; letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); }
+.vp-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: var(--leading-snug); }
+.vp-body { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-normal); }
+.vp-caption { font-family: var(--font-body); font-weight: 400; line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+.vp-mono { font-family: var(--font-mono); }
+
+/* === Gradient Text Utility === */
+.vp-gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Glow Effects === */
+.vp-glow-border {
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  box-shadow: var(--shadow-glow);
+}
+
+.vp-glow-border:hover {
+  border-color: rgba(108, 92, 231, 0.5);
+  box-shadow: var(--shadow-glow-strong);
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased" style="background: var(--color-bg); color: var(--color-text-primary);">
+
+<!-- ===== HEADER / NAVBAR ===== -->
+<header class="fixed top-0 left-0 right-0 z-[200]" style="background: rgba(10,10,15,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+  <nav class="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between" style="font-family: var(--font-body);">
+
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2 shrink-0">
+      <span class="text-xl font-bold tracking-tight" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">VideoAI</span>
+    </a>
+
+    <!-- Center Navigation (Desktop) -->
+    <ul class="hidden md:flex items-center gap-8">
+      <li>
+        <a href="#" data-nav-key="index" data-dom-id="back-home"
+           class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-text-secondary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          首页
+        </a>
+      </li>
+      <li>
+        <a href="#" data-nav-key="short-drama" data-dom-id="nav-short-drama"
+           class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-text-secondary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          短剧制作
+        </a>
+      </li>
+      <li>
+        <a href="#" data-nav-key="enterprise-video" data-dom-id="nav-enterprise"
+           class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-text-secondary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          企业视频
+        </a>
+      </li>
+      <li>
+        <a href="#" data-nav-key="cultural-tourism" data-active="true"
+           class="nav-link nav-active relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-primary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          文旅宣传
+        </a>
+      </li>
+      <li>
+        <a href="#" data-nav-key="about" data-dom-id="nav-about"
+           class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-text-secondary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          关于我们
+        </a>
+      </li>
+      <li>
+        <a href="#" data-nav-key="contact" data-dom-id="nav-contact"
+           class="nav-link relative text-sm font-medium transition-colors duration-[250ms]"
+           style="color: var(--color-text-secondary);"
+           onmouseover="this.style.color='var(--color-text-primary)'"
+           onmouseout="if(!this.classList.contains('nav-active'))this.style.color='var(--color-text-secondary)'">
+          联系合作
+        </a>
+      </li>
+    </ul>
+
+    <!-- Right Side: CTA + Mobile Toggle -->
+    <div class="flex items-center gap-4">
+      <!-- CTA Button (Desktop) -->
+      <a href="#" data-dom-id="nav-contact"
+         class="hidden md:inline-flex items-center px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-[250ms]"
+         style="background: linear-gradient(135deg, #6C5CE7, #74B9FF);"
+         onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'"
+         onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
+        开始合作
+      </a>
+
+      <!-- Mobile Hamburger -->
+      <button id="mobile-menu-toggle"
+              class="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg transition-colors duration-[250ms]"
+              style="color: var(--color-text-primary);"
+              aria-label="菜单"
+              onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Panel -->
+  <div id="mobile-menu" class="hidden md:hidden px-6 pb-6 pt-2" style="background: rgba(10,10,15,0.95); border-top: 1px solid rgba(255,255,255,0.06);">
+    <ul class="flex flex-col gap-1">
+      <li><a href="#" data-nav-key="index" data-dom-id="back-home" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">首页</a></li>
+      <li><a href="#" data-nav-key="short-drama" data-dom-id="nav-short-drama" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">短剧制作</a></li>
+      <li><a href="#" data-nav-key="enterprise-video" data-dom-id="nav-enterprise" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">企业视频</a></li>
+      <li><a href="#" data-nav-key="cultural-tourism" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-primary);">文旅宣传</a></li>
+      <li><a href="#" data-nav-key="about" data-dom-id="nav-about" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">关于我们</a></li>
+      <li><a href="#" data-nav-key="contact" data-dom-id="nav-contact" class="block py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-[250ms]" style="color: var(--color-text-secondary);">联系合作</a></li>
+    </ul>
+    <div class="mt-4">
+      <a href="#" data-dom-id="nav-contact" class="flex items-center justify-center px-5 py-3 rounded-lg text-sm font-semibold text-white" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF);">开始合作</a>
+    </div>
+  </div>
+</header>
+
+<!-- Nav Spacer -->
+<div class="h-16"></div>
+
+<main>
+
+  <!-- ========================================
+       SECTION 1: Service Hero
+       ======================================== -->
+  <section class="relative overflow-hidden" style="min-height: 520px;">
+    <!-- Background Image + Teal-Green Gradient Overlay -->
+    <div class="absolute inset-0">
+      <img src="../assets/image_6_yi19x4.jpg" alt="" class="w-full h-full object-cover" loading="eager">
+      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(0,206,201,0.85) 0%, rgba(0,184,148,0.75) 40%, rgba(10,10,15,0.9) 100%);"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-[1280px] mx-auto px-6 flex flex-col items-center justify-center text-center" style="min-height: 520px; padding-top: 80px; padding-bottom: 80px;">
+      <h1 class="vp-display mb-6" style="font-size: clamp(2.25rem, 5vw, 3.75rem); background: linear-gradient(135deg, #00CEC9, #00B894, #55EFC4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        文旅宣传服务
+      </h1>
+      <p class="vp-body max-w-2xl mb-10" style="font-size: var(--text-lg); color: rgba(255,255,255,0.85); line-height: var(--leading-relaxed);">
+        用AI讲好每一座城市的故事，让文旅IP触达亿万观众
+      </p>
+      <a href="#" data-dom-id="cta-about"
+         class="inline-flex items-center px-8 py-3.5 rounded-lg text-sm font-semibold text-white transition-all duration-[250ms]"
+         style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 30px rgba(0,206,201,0.3);"
+         onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 40px rgba(0,206,201,0.45)'"
+         onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 30px rgba(0,206,201,0.3)'">
+        查看案例
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- ========================================
+       SECTION 2: Tourism Capabilities (文旅能力)
+       ======================================== -->
+  <section class="py-20 lg:py-28" style="background: var(--color-bg);">
+    <div class="max-w-[1280px] mx-auto px-6">
+
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="vp-heading mb-4" style="font-size: var(--text-4xl); color: var(--color-text-primary);">
+          文旅能力
+        </h2>
+        <p class="vp-body max-w-xl mx-auto" style="font-size: var(--text-base); color: var(--color-text-secondary);">
+          从目的地宣传到文化遗产保护，AI技术赋能文旅全场景
+        </p>
+      </div>
+
+      <!-- 3 Capability Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Card 1: 目的地宣传片 -->
+        <div class="group relative rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,206,201,0.12)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <!-- Teal Gradient Accent Top -->
+          <div class="h-1.5" style="background: linear-gradient(90deg, #00CEC9, #00B894);"></div>
+          <div class="p-8">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style="background: rgba(0,206,201,0.1);">
+              <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">目的地宣传片</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Destination promotional films
+            </p>
+            <p class="vp-body mt-3" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              运用AI视觉技术打造震撼人心的城市与景区宣传片，从航拍到微距，全方位展现目的地魅力
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: 文化遗产数字化 -->
+        <div class="group relative rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,206,201,0.12)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="h-1.5" style="background: linear-gradient(90deg, #00CEC9, #00B894);"></div>
+          <div class="p-8">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style="background: rgba(0,206,201,0.1);">
+              <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">文化遗产数字化</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Cultural heritage digitization
+            </p>
+            <p class="vp-body mt-3" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              利用AI三维重建与数字孪生技术，让历史文物与古建筑在数字世界焕发新生
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: 文旅IP打造 -->
+        <div class="group relative rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,206,201,0.12)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="h-1.5" style="background: linear-gradient(90deg, #00CEC9, #00B894);"></div>
+          <div class="p-8">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style="background: rgba(0,206,201,0.1);">
+              <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            </div>
+            <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">文旅IP打造</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Tourism IP creation
+            </p>
+            <p class="vp-body mt-3" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              从品牌定位到内容矩阵，AI辅助打造具有传播力的文旅IP，提升目的地知名度与吸引力
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================
+       SECTION 3: Destination Showcase (目的地展示)
+       ======================================== -->
+  <section class="py-20 lg:py-28" style="background: var(--color-bg-elevated);">
+    <div class="max-w-[1280px] mx-auto px-6">
+
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="vp-heading mb-4" style="font-size: var(--text-4xl); color: var(--color-text-primary);">
+          目的地展示
+        </h2>
+        <p class="vp-body max-w-xl mx-auto" style="font-size: var(--text-base); color: var(--color-text-secondary);">
+          探索我们为各地文旅打造的精品内容
+        </p>
+      </div>
+
+      <!-- 3 Destination Cards (Landscape Layout) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Destination 1: 古城文化之旅 -->
+        <div class="group rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <!-- Scenic Gradient Placeholder -->
+          <div class="relative h-52 overflow-hidden" style="background: linear-gradient(135deg, #E17055 0%, #FDCB6E 50%, #FAB1A0 100%);">
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, transparent 40%, rgba(10,10,15,0.6) 100%);"></div>
+            <!-- Tag -->
+            <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium" style="background: rgba(0,0,0,0.4); color: #fff; backdrop-filter: blur(8px);">
+              人文历史
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="vp-heading mb-2" style="font-size: var(--text-lg); color: var(--color-text-primary);">古城文化之旅</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Ancient city cultural journey
+            </p>
+            <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              深入千年古城，用AI影像还原历史风貌，讲述穿越时空的文化故事
+            </p>
+          </div>
+        </div>
+
+        <!-- Destination 2: 自然生态探秘 -->
+        <div class="group rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="relative h-52 overflow-hidden" style="background: linear-gradient(135deg, #00B894 0%, #00CEC9 50%, #55EFC4 100%);">
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, transparent 40%, rgba(10,10,15,0.6) 100%);"></div>
+            <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium" style="background: rgba(0,0,0,0.4); color: #fff; backdrop-filter: blur(8px);">
+              自然风光
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="vp-heading mb-2" style="font-size: var(--text-lg); color: var(--color-text-primary);">自然生态探秘</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Natural ecology exploration
+            </p>
+            <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              以AI超高清影像捕捉自然奇观，展现生态之美，唤醒观众的环保意识
+            </p>
+          </div>
+        </div>
+
+        <!-- Destination 3: 非遗传承纪实 -->
+        <div class="group rounded-xl overflow-hidden transition-all duration-[300ms] cursor-pointer"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="relative h-52 overflow-hidden" style="background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);">
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, transparent 40%, rgba(10,10,15,0.6) 100%);"></div>
+            <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium" style="background: rgba(0,0,0,0.4); color: #fff; backdrop-filter: blur(8px);">
+              非遗文化
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="vp-heading mb-2" style="font-size: var(--text-lg); color: var(--color-text-primary);">非遗传承纪实</h3>
+            <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+              Intangible heritage documentary
+            </p>
+            <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+              记录非遗技艺的传承脉络，用AI技术让传统工艺在数字时代焕发生机
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================
+       SECTION 4: Production Process (制作流程)
+       ======================================== -->
+  <section class="py-20 lg:py-28" style="background: var(--color-bg);">
+    <div class="max-w-[1280px] mx-auto px-6">
+
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="vp-heading mb-4" style="font-size: var(--text-4xl); color: var(--color-text-primary);">
+          制作流程
+        </h2>
+        <p class="vp-body max-w-xl mx-auto" style="font-size: var(--text-base); color: var(--color-text-secondary);">
+          从调研到分发的全链路AI视频制作流程
+        </p>
+      </div>
+
+      <!-- Vertical Timeline (Left-Aligned) -->
+      <div class="max-w-2xl mx-auto relative">
+
+        <!-- Teal Gradient Timeline Line -->
+        <div class="absolute left-[23px] top-0 bottom-0 w-0.5" style="background: linear-gradient(180deg, #00CEC9, #00B894, rgba(0,184,148,0.1));"></div>
+
+        <!-- Step 1 -->
+        <div class="relative pl-16 pb-14">
+          <!-- Timeline Dot -->
+          <div class="absolute left-0 top-1 w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 20px rgba(0,206,201,0.3);">
+            <span class="text-sm font-bold text-white">01</span>
+          </div>
+          <h3 class="vp-heading mb-2" style="font-size: var(--text-xl); color: var(--color-text-primary);">文旅资源调研</h3>
+          <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Resource research
+          </p>
+          <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            深入目的地实地考察，梳理文化脉络与核心资源，建立文旅内容素材库
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative pl-16 pb-14">
+          <div class="absolute left-0 top-1 w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 20px rgba(0,206,201,0.3);">
+            <span class="text-sm font-bold text-white">02</span>
+          </div>
+          <h3 class="vp-heading mb-2" style="font-size: var(--text-xl); color: var(--color-text-primary);">叙事策略制定</h3>
+          <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Narrative strategy
+          </p>
+          <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            结合目标受众画像与传播趋势，制定差异化叙事策略与内容创意方案
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative pl-16 pb-14">
+          <div class="absolute left-0 top-1 w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 20px rgba(0,206,201,0.3);">
+            <span class="text-sm font-bold text-white">03</span>
+          </div>
+          <h3 class="vp-heading mb-2" style="font-size: var(--text-xl); color: var(--color-text-primary);">AI拍摄与制作</h3>
+          <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            AI filming &amp; production
+          </p>
+          <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            运用AI智能拍摄、自动剪辑与特效生成，高效产出高品质文旅视频内容
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative pl-16">
+          <div class="absolute left-0 top-1 w-12 h-12 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 20px rgba(0,206,201,0.3);">
+            <span class="text-sm font-bold text-white">04</span>
+          </div>
+          <h3 class="vp-heading mb-2" style="font-size: var(--text-xl); color: var(--color-text-primary);">多平台分发</h3>
+          <p class="vp-body" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Multi-platform distribution
+          </p>
+          <p class="vp-body mt-2" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            覆盖抖音、B站、小红书等主流平台，AI智能优化分发策略，最大化传播效果
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================
+       SECTION 5: Partnership Model (合作模式)
+       ======================================== -->
+  <section class="py-20 lg:py-28" style="background: var(--color-bg-elevated);">
+    <div class="max-w-[1280px] mx-auto px-6">
+
+      <!-- Section Header -->
+      <div class="text-center mb-16">
+        <h2 class="vp-heading mb-4" style="font-size: var(--text-4xl); color: var(--color-text-primary);">
+          合作模式
+        </h2>
+        <p class="vp-body max-w-xl mx-auto" style="font-size: var(--text-base); color: var(--color-text-secondary);">
+          灵活的合作方案，满足不同规模文旅项目的需求
+        </p>
+      </div>
+
+      <!-- 3 Partnership Tiers -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Tier 1: 项目制合作 -->
+        <div class="rounded-xl p-8 transition-all duration-[300ms] text-center"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center" style="background: rgba(0,206,201,0.1);">
+            <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">项目制合作</h3>
+          <p class="vp-body mb-6" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Per-project basis
+          </p>
+          <p class="vp-body mb-8" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            适合单一文旅项目的宣传片、纪录片制作，按项目需求定制方案与报价
+          </p>
+          <a href="#" data-dom-id="nav-contact"
+             class="inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-[250ms]"
+             style="border: 1px solid rgba(0,206,201,0.4); color: #00CEC9;"
+             onmouseover="this.style.background='rgba(0,206,201,0.1)'; this.style.borderColor='#00CEC9'"
+             onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(0,206,201,0.4)'">
+            咨询详情
+          </a>
+        </div>
+
+        <!-- Tier 2: 年度框架合作 -->
+        <div class="rounded-xl p-8 transition-all duration-[300ms] text-center relative"
+             style="background: var(--color-bg-surface); border: 1px solid rgba(0,206,201,0.3); box-shadow: 0 0 30px rgba(0,206,201,0.08);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.5)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,206,201,0.15)'"
+             onmouseout="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 30px rgba(0,206,201,0.08)'">
+          <!-- Recommended Badge -->
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold text-white" style="background: linear-gradient(135deg, #00CEC9, #00B894);">
+            推荐
+          </span>
+          <div class="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center" style="background: rgba(0,206,201,0.15);">
+            <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">年度框架合作</h3>
+          <p class="vp-body mb-6" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Annual framework
+          </p>
+          <p class="vp-body mb-8" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            长期稳定的内容供给，涵盖季度宣传片、节日专题、新媒体内容矩阵等
+          </p>
+          <a href="#" data-dom-id="nav-contact"
+             class="inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-[250ms]"
+             style="background: linear-gradient(135deg, #00CEC9, #00B894);"
+             onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'"
+             onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
+            咨询详情
+          </a>
+        </div>
+
+        <!-- Tier 3: 深度战略共建 -->
+        <div class="rounded-xl p-8 transition-all duration-[300ms] text-center"
+             style="background: var(--color-bg-surface); border: 1px solid var(--color-border);"
+             onmouseover="this.style.borderColor='rgba(0,206,201,0.3)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+             onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div class="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center" style="background: rgba(0,206,201,0.1);">
+            <svg class="w-6 h-6" style="color: #00CEC9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <h3 class="vp-heading mb-3" style="font-size: var(--text-xl); color: var(--color-text-primary);">深度战略共建</h3>
+          <p class="vp-body mb-6" style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed);">
+            Strategic partnership
+          </p>
+          <p class="vp-body mb-8" style="font-size: var(--text-sm); color: var(--color-text-tertiary); line-height: var(--leading-relaxed);">
+            从品牌战略到内容生态的全面合作，共建文旅IP，共享传播价值
+          </p>
+          <a href="#" data-dom-id="nav-contact"
+             class="inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-[250ms]"
+             style="border: 1px solid rgba(0,206,201,0.4); color: #00CEC9;"
+             onmouseover="this.style.background='rgba(0,206,201,0.1)'; this.style.borderColor='#00CEC9'"
+             onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(0,206,201,0.4)'">
+            咨询详情
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================
+       SECTION 6: Service CTA
+       ======================================== -->
+  <section class="py-20 lg:py-28 relative overflow-hidden" style="background: var(--color-bg);">
+    <!-- Background Glow -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="w-[600px] h-[600px] rounded-full" style="background: radial-gradient(circle, rgba(0,206,201,0.08) 0%, transparent 70%);"></div>
+    </div>
+
+    <div class="relative z-10 max-w-[1280px] mx-auto px-6 text-center">
+      <h2 class="vp-heading mb-6" style="font-size: clamp(1.5rem, 3vw, 2.25rem); color: var(--color-text-primary);">
+        让AI为你的文旅品牌注入新活力
+      </h2>
+      <a href="#" data-dom-id="nav-contact"
+         class="inline-flex items-center px-10 py-4 rounded-lg text-base font-semibold text-white transition-all duration-[250ms]"
+         style="background: linear-gradient(135deg, #00CEC9, #00B894); box-shadow: 0 0 30px rgba(0,206,201,0.3);"
+         onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 40px rgba(0,206,201,0.45)'"
+         onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 30px rgba(0,206,201,0.3)'">
+        开始合作
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+
+<!-- ===== FOOTER ===== -->
+<footer style="background: var(--color-bg); border-top: 1px solid rgba(255,255,255,0.06);" class="mt-auto">
+  <div class="max-w-[1280px] mx-auto px-6 py-16">
+    <!-- 4-Column Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+
+      <!-- Column 1: Brand Info -->
+      <div>
+        <a href="#" class="inline-block mb-4">
+          <span class="text-xl font-bold tracking-tight" style="background: linear-gradient(135deg, #6C5CE7, #74B9FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">VideoAI</span>
+        </a>
+        <p class="text-sm leading-relaxed" style="color: var(--color-text-secondary); font-family: var(--font-body);">
+          专注于AI驱动的视频制作服务，为企业和个人提供高效、专业的视频内容解决方案。从短剧到企业宣传片，用AI技术重新定义视频创作。
+        </p>
+      </div>
+
+      <!-- Column 2: 服务项目 -->
+      <div>
+        <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">服务项目</h4>
+        <ul class="space-y-3">
+          <li><a href="#" data-nav-key="short-drama" data-dom-id="nav-short-drama" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">短剧制作</a></li>
+          <li><a href="#" data-nav-key="enterprise-video" data-dom-id="nav-enterprise" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">企业视频</a></li>
+          <li><a href="#" data-nav-key="cultural-tourism" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">文旅宣传</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 3: 关于我们 -->
+      <div>
+        <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">关于我们</h4>
+        <ul class="space-y-3">
+          <li><a href="#" data-nav-key="about" data-dom-id="nav-about" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">关于我们</a></li>
+          <li><a href="#" data-nav-key="contact" data-dom-id="nav-contact" class="text-sm transition-colors duration-[250ms]" style="color: var(--color-text-secondary);" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">联系合作</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: 联系方式 -->
+      <div>
+        <h4 class="text-sm font-semibold mb-4 tracking-wide" style="color: var(--color-text-primary); font-family: var(--font-display);">联系方式</h4>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-2">
+            <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span class="text-sm" style="color: var(--color-text-secondary);">contact@videoai.com</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            <span class="text-sm" style="color: var(--color-text-secondary);">400-888-0000</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <svg class="w-4 h-4 mt-0.5 shrink-0" style="color: var(--color-text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="text-sm" style="color: var(--color-text-secondary);">北京市朝阳区科技园区A座</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="mt-12 pt-8" style="border-top: 1px solid rgba(255,255,255,0.06);">
+      <p class="text-center text-xs" style="color: var(--color-text-tertiary); font-family: var(--font-body);">
+        &copy; 2025 VideoAI. All rights reserved. 保留所有权利。
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== Active Nav Style Injection ===== -->
+<style>
+  .nav-active {
+    color: var(--color-primary) !important;
+  }
+  .nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--color-primary);
+  }
+</style>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

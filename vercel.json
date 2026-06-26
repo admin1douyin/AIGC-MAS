@@ -1,13 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd packages/client && npm install && npm run build",
+  "buildCommand": "npm run vercel:build",
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
   "framework": null,
   "functions": {
-    "api/[[...slug]].ts": {
+    "api/**/*.ts": {
       "maxDuration": 30,
-      "includeFiles": "packages/server/prisma/**"
+      "includeFiles": "packages/server/**"
     }
   },
   "rewrites": [
@@ -15,6 +15,11 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "env": {
+    "DATABASE_URL": "@database_url",
+    "DIRECT_URL": "@direct_url",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "SUPABASE_ANON_KEY": "@supabase_anon_key",
     "VITE_SUPABASE_URL": "@supabase_url",
     "VITE_SUPABASE_ANON_KEY": "@supabase_anon_key"
   }

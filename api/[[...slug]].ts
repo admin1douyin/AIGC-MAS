@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { validateEnv } from '../packages/server/src/lib/env-validator';
 import { prisma } from '../packages/server/src/lib/prisma';
 import { errorHandler } from '../packages/server/src/middleware/errorHandler';
 import { notFoundHandler } from '../packages/server/src/middleware/notFound';
@@ -30,7 +31,14 @@ async function getApp(): Promise<express.Express> {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   app.get('/api/health', (_req, res) => {
-    res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
+    res.json({ 
+      success: true, 
+      data: { 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+      } 
+    });
   });
 
   app.use('/api/projects', projectRoutes);
@@ -50,11 +58,16 @@ async function getApp(): Promise<express.Express> {
 
   if (!initialized) {
     try {
+      // Validate environment variables
+      validateEnv();
+      
       await prisma.$connect();
       await agentEngine.initialize();
       initialized = true;
+      console.log('[Vercel API] Application initialized successfully');
     } catch (error) {
       console.error('[Vercel API] Initialization error:', error);
+      // Don't throw - allow the app to start and show error in health check
     }
   }
 

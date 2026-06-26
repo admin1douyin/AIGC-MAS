@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
+import { validateEnv } from './lib/env-validator';
 import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFound';
@@ -58,6 +59,9 @@ const server = createServer(app);
 
 async function bootstrap() {
   try {
+    // Validate environment variables before starting
+    validateEnv();
+    
     await prisma.$connect();
     console.log('[Database] Connected successfully');
 

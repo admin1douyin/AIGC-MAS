@@ -23,3 +23,5 @@ coverage
 .idea
 *.swp
 *.swo
+
+.vercel

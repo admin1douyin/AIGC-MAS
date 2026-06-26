@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Film,
   Bot,
@@ -11,6 +12,7 @@ import {
 import { statsApi } from '../services/statsApi';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -159,16 +161,17 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-slate-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-800">最近项目</h3>
-            <a href="#/projects" className="text-sm text-blue-600 hover:text-blue-700">
+            <button onClick={() => navigate('/app/projects')} className="text-sm text-blue-600 hover:text-blue-700">
               查看全部
-            </a>
+            </button>
           </div>
           <div className="space-y-3">
             {stats?.recentProjects?.length > 0 ? (
               stats.recentProjects.map((project: any) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors"
+                  onClick={() => navigate(`/app/projects/${project.id}`)}
+                  className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
@@ -239,10 +242,10 @@ export default function Dashboard() {
               gradient: 'from-amber-500 to-orange-500',
             },
           ].map((item, idx) => (
-            <a
+            <button
               key={idx}
-              href="#/projects/new"
-              className="group p-5 border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-md transition-all"
+              onClick={() => navigate('/app/projects/new')}
+              className="group p-5 border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-md transition-all text-left"
             >
               <div
                 className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
@@ -251,7 +254,7 @@ export default function Dashboard() {
               </div>
               <h4 className="font-semibold text-slate-800 mb-1">{item.title}</h4>
               <p className="text-sm text-slate-500">{item.desc}</p>
-            </a>
+            </button>
           ))}
         </div>
       </div>

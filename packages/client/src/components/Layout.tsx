@@ -17,12 +17,12 @@ import {
 import { useAuth } from '../lib/AuthContext';
 
 const navItems = [
-  { path: '/', label: '总览', icon: LayoutDashboard },
-  { path: '/projects', label: '项目管理', icon: Film },
-  { path: '/assets', label: '素材管理', icon: FolderOpen },
-  { path: '/agent-market', label: '智能体市场', icon: Store },
-  { path: '/agents', label: '我的智能体', icon: Bot },
-  { path: '/notifications', label: '通知', icon: Bell },
+  { path: '/app', label: '总览', icon: LayoutDashboard },
+  { path: '/app/projects', label: '项目管理', icon: Film },
+  { path: '/app/assets', label: '素材管理', icon: FolderOpen },
+  { path: '/app/agent-market', label: '智能体市场', icon: Store },
+  { path: '/app/agents', label: '我的智能体', icon: Bot },
+  { path: '/app/notifications', label: '通知', icon: Bell },
 ];
 
 export default function Layout() {
@@ -65,8 +65,8 @@ export default function Layout() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.path === '/'
-                ? location.pathname === '/'
+              item.path === '/app'
+                ? location.pathname === '/app'
                 : location.pathname.startsWith(item.path);
             return (
               <NavLink
@@ -109,7 +109,7 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             {/* Subscription Badge */}
             <button
-              onClick={() => navigate('/subscription')}
+              onClick={() => navigate('/app/subscription')}
               className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full hover:bg-primary/20 transition-colors"
             >
               <CreditCard className="w-4 h-4" />
@@ -150,7 +150,7 @@ export default function Layout() {
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
-                          navigate('/profile');
+                          navigate('/app/profile');
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-bg-surface-hover transition-colors"
                       >
@@ -160,7 +160,7 @@ export default function Layout() {
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
-                          navigate('/subscription');
+                          navigate('/app/subscription');
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-bg-surface-hover transition-colors"
                       >
@@ -194,16 +194,16 @@ export default function Layout() {
 }
 
 function getPageTitle(path: string): string {
-  if (path === '/') return '总览看板';
-  if (path.startsWith('/projects/new')) return '新建项目';
-  if (path.startsWith('/projects/') && path.includes('/script')) return '脚本编辑器';
-  if (path.startsWith('/projects/')) return '项目详情';
-  if (path.startsWith('/projects')) return '项目管理';
-  if (path.startsWith('/agent-market')) return '智能体市场';
-  if (path.startsWith('/agents')) return '我的智能体';
-  if (path.startsWith('/assets')) return '素材管理';
-  if (path.startsWith('/notifications')) return '通知中心';
-  if (path.startsWith('/profile')) return '个人中心';
-  if (path.startsWith('/subscription')) return '订阅管理';
+  if (path === '/app') return '总览看板';
+  if (path.startsWith('/app/projects/new')) return '新建项目';
+  if (path.startsWith('/app/projects/') && path.includes('/script')) return '脚本编辑器';
+  if (path.startsWith('/app/projects/')) return '项目详情';
+  if (path.startsWith('/app/projects')) return '项目管理';
+  if (path.startsWith('/app/agent-market')) return '智能体市场';
+  if (path.startsWith('/app/agents')) return '我的智能体';
+  if (path.startsWith('/app/assets')) return '素材管理';
+  if (path.startsWith('/app/notifications')) return '通知中心';
+  if (path.startsWith('/app/profile')) return '个人中心';
+  if (path.startsWith('/app/subscription')) return '订阅管理';
   return '';
 }

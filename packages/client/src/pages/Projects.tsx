@@ -17,6 +17,7 @@ export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -24,7 +25,7 @@ export default function Projects() {
 
   useEffect(() => {
     loadProjects();
-  }, [page, typeFilter, statusFilter]);
+  }, [page, typeFilter, statusFilter, searchQuery]);
 
   const loadProjects = async () => {
     setLoading(true);
@@ -34,7 +35,7 @@ export default function Projects() {
         pageSize: 10,
         type: typeFilter || undefined,
         status: statusFilter || undefined,
-        search: search || undefined,
+        search: searchQuery || undefined,
       });
       if (res.success) {
         setProjects(res.data.items);
@@ -50,7 +51,7 @@ export default function Projects() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    loadProjects();
+    setSearchQuery(search);
   };
 
   const handleDelete = async (id: string) => {
@@ -72,6 +73,15 @@ export default function Projects() {
     }
   };
 
+  const handlePause = async (id: string) => {
+    try {
+      await projectApi.pause(id);
+      loadProjects();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -81,7 +91,7 @@ export default function Projects() {
           <p className="text-slate-500 mt-1">管理所有视频制作项目</p>
         </div>
         <button
-          onClick={() => navigate('/projects/new')}
+          onClick={() => navigate('/app/projects/new')}
           className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -142,7 +152,7 @@ export default function Projects() {
             <Film className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <p className="text-slate-500 mb-4">暂无项目</p>
             <button
-              onClick={() => navigate('/projects/new')}
+              onClick={() => navigate('/app/projects/new')}
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
               创建第一个项目
@@ -184,7 +194,7 @@ export default function Projects() {
                         <div>
                           <div
                             className="font-medium text-slate-800 cursor-pointer hover:text-blue-600"
-                            onClick={() => navigate(`/projects/${project.id}`)}
+                            onClick={() => navigate(`/app/projects/${project.id}`)}
                           >
                             {project.name}
                           </div>
@@ -221,7 +231,7 @@ export default function Projects() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => navigate(`/projects/${project.id}`)}
+                          onClick={() => navigate(`/app/projects/${project.id}`)}
                           className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                           title="查看"
                         >
@@ -237,6 +247,7 @@ export default function Projects() {
                           </button>
                         ) : project.status === 'in_production' ? (
                           <button
+                            onClick={() => handlePause(project.id)}
                             className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
                             title="暂停"
                           >

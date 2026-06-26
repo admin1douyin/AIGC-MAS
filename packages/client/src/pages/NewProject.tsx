@@ -65,7 +65,7 @@ export default function NewProject() {
         tags: formData.tags,
       });
       if (res.success) {
-        navigate(`/projects/${res.data.id}`);
+        navigate(`/app/projects/${res.data.id}`);
       }
     } catch (e) {
       console.error(e);

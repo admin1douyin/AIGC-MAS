@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -24,25 +24,14 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [polling, setPolling] = useState(false);
-
-  useEffect(() => {
-    if (!id) return;
-    loadProject();
-
-    const interval = setInterval(() => {
-      if (project?.status === 'in_production') {
-        loadProject();
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [id]);
+  const statusRef = useRef<string>('');
 
   const loadProject = async () => {
     try {
       const res: any = await projectApi.get(id!);
       if (res.success) {
         setProject(res.data);
+        statusRef.current = res.data.status;
         setPolling(res.data.status === 'in_production');
       }
     } catch (e) {
@@ -51,6 +40,19 @@ export default function ProjectDetail() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!id) return;
+    loadProject();
+
+    const interval = setInterval(() => {
+      if (statusRef.current === 'in_production') {
+        loadProject();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [id]);
 
   const handleStart = async () => {
     if (!id) return;
@@ -104,7 +106,7 @@ export default function ProjectDetail() {
       <div className="text-center py-12">
         <p className="text-slate-500">项目不存在</p>
         <button
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate('/app/projects')}
           className="mt-4 text-blue-600 hover:text-blue-700"
         >
           返回项目列表
@@ -118,7 +120,7 @@ export default function ProjectDetail() {
       {/* Header */}
       <div>
         <button
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate('/app/projects')}
           className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -151,7 +153,7 @@ export default function ProjectDetail() {
             </div>
 
             <div className="flex items-center gap-3">
-              {project.status === 'draft' || project.status === 'planning' ? (
+              {project.status === 'draft' ? (
                 <button
                   onClick={handleStart}
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
@@ -167,7 +169,7 @@ export default function ProjectDetail() {
                   <Pause className="w-4 h-4" />
                   暂停
                 </button>
-              ) : project.status === 'planning' || project.status === 'paused' ? (
+              ) : project.status === 'paused' || project.status === 'planning' ? (
                 <button
                   onClick={handleResume}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"

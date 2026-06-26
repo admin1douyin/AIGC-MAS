@@ -634,9 +634,13 @@ function getStatusLabel(status: string) {
     draft: '草稿',
     planning: '规划中',
     in_production: '制作中',
+    in_review: '审核中',
     review: '审核中',
     completed: '已完成',
     cancelled: '已取消',
+    paused: '已暂停',
+    failed: '失败',
+    archived: '已归档',
   };
   return map[status] || status;
 }
@@ -646,9 +650,13 @@ function getStatusStyle(status: string) {
     draft: 'bg-slate-100 text-slate-700',
     planning: 'bg-blue-100 text-blue-700',
     in_production: 'bg-amber-100 text-amber-700',
+    in_review: 'bg-purple-100 text-purple-700',
     review: 'bg-purple-100 text-purple-700',
     completed: 'bg-emerald-100 text-emerald-700',
     cancelled: 'bg-red-100 text-red-700',
+    paused: 'bg-orange-100 text-orange-700',
+    failed: 'bg-red-100 text-red-700',
+    archived: 'bg-slate-100 text-slate-500',
   };
   return map[status] || 'bg-slate-100 text-slate-700';
 }
@@ -677,6 +685,8 @@ function getTaskStatusLabel(status: string) {
   const map: Record<string, string> = {
     pending: '待执行',
     in_progress: '进行中',
+    in_review: '审核中',
+    needs_revision: '需要修改',
     completed: '已完成',
     failed: '失败',
     cancelled: '已取消',
@@ -688,6 +698,8 @@ function getTaskStatusStyle(status: string) {
   const map: Record<string, string> = {
     pending: 'bg-slate-100 text-slate-600',
     in_progress: 'bg-blue-100 text-blue-600',
+    in_review: 'bg-purple-100 text-purple-600',
+    needs_revision: 'bg-orange-100 text-orange-600',
     completed: 'bg-emerald-100 text-emerald-600',
     failed: 'bg-red-100 text-red-600',
     cancelled: 'bg-slate-100 text-slate-500',

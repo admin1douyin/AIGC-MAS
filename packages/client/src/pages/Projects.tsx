@@ -312,9 +312,13 @@ function getStatusLabel(status: string) {
     draft: '草稿',
     planning: '规划中',
     in_production: '制作中',
+    in_review: '审核中',
     review: '审核中',
     completed: '已完成',
     cancelled: '已取消',
+    paused: '已暂停',
+    failed: '失败',
+    archived: '已归档',
   };
   return map[status] || status;
 }
@@ -324,9 +328,13 @@ function getStatusStyle(status: string) {
     draft: 'bg-slate-100 text-slate-700',
     planning: 'bg-blue-100 text-blue-700',
     in_production: 'bg-amber-100 text-amber-700',
+    in_review: 'bg-purple-100 text-purple-700',
     review: 'bg-purple-100 text-purple-700',
     completed: 'bg-emerald-100 text-emerald-700',
     cancelled: 'bg-red-100 text-red-700',
+    paused: 'bg-orange-100 text-orange-700',
+    failed: 'bg-red-100 text-red-700',
+    archived: 'bg-slate-100 text-slate-500',
   };
   return map[status] || 'bg-slate-100 text-slate-700';
 }

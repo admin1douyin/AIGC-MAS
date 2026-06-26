@@ -3,7 +3,6 @@
   "buildCommand": "npm run vercel:build",
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
-  "framework": "static",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],

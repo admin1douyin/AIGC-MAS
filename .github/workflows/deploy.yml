@@ -1,0 +1,62 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 1. Checkout
+        uses: actions/checkout@v4
+        
+      - name: 2. Show files
+        run: |
+          echo "=== Root files ==="
+          ls -la
+          echo "=== .github/workflows ==="
+          ls -la .github/workflows/
+          
+      - name: 3. Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          
+      - name: 4. Node version
+        run: |
+          node --version
+          npm --version
+          
+      - name: 5. Install
+        run: npm install
+        
+      - name: 6. Build
+        run: npm run build:client
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          
+      - name: 7. Verify build
+        run: |
+          echo "=== Dist files ==="
+          ls -la packages/client/dist/
+          
+      - name: 8. Vercel deploy
+        run: |
+          echo "Installing vercel..."
+          npm i -g vercel
+          vercel --version
+          echo "Deploying..."
+          vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod --force
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          
+      - name: 9. Health check
+        run: |
+          sleep 30
+          echo "Checking https://aigc-mas.vercel.app"
+          curl -s -o /dev/null -w "HTTP %{http_code}\n" https://aigc-mas.vercel.app || true

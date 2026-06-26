@@ -5,17 +5,16 @@ import { validate } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase';
 import crypto from 'crypto';
-import multer from 'multer';
+const multer = require('multer');
 
 const router = Router();
 
-// Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max file size
+    fileSize: 100 * 1024 * 1024,
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     const allowedMimes = [
       'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo',
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
@@ -31,35 +30,42 @@ const upload = multer({
 
 const createAssetSchema = z.object({
   projectId: z.string(),
-  type: z.enum(['clip', 'image', 'audio', 'music', 'voiceover', 'subtitle']),
+  type: z.enum(['video', 'image', 'audio', 'document']),
   name: z.string(),
   url: z.string().optional(),
   duration: z.number().optional(),
-  metadata: z.any().optional(),
+  metadata: z.string().optional(),
+  tags: z.string().optional(),
+  category: z.string().optional(),
 });
 
 const uploadAssetSchema = z.object({
   projectId: z.string(),
-  type: z.enum(['clip', 'image', 'audio', 'music', 'voiceover', 'subtitle']),
+  type: z.enum(['video', 'image', 'audio', 'document']),
   name: z.string(),
   duration: z.number().optional(),
-  metadata: z.any().optional(),
+  metadata: z.string().optional(),
+  tags: z.string().optional(),
+  category: z.string().optional(),
 });
 
-// Get storage bucket name based on asset type
+const updateAssetSchema = z.object({
+  name: z.string().optional(),
+  tags: z.string().optional(),
+  category: z.string().optional(),
+  metadata: z.string().optional(),
+});
+
 function getBucketName(type: string): string {
   const buckets: Record<string, string> = {
-    clip: 'video-clips',
+    video: 'video-clips',
     image: 'images',
     audio: 'audio',
-    music: 'music',
-    voiceover: 'voiceovers',
-    subtitle: 'subtitles',
+    document: 'documents',
   };
   return buckets[type] || 'assets';
 }
 
-// Generate unique filename
 function generateFileName(originalName: string): string {
   const ext = originalName.split('.').pop() || '';
   const timestamp = Date.now();
@@ -67,14 +73,21 @@ function generateFileName(originalName: string): string {
   return `${timestamp}-${random}.${ext}`;
 }
 
-// List assets for a project
 router.get('/', async (req: Request, res: Response) => {
   const projectId = req.query.projectId as string;
   const type = req.query.type as string;
+  const category = req.query.category as string;
+  const tag = req.query.tag as string;
+  const search = req.query.search as string;
 
   const where: any = {};
   if (projectId) where.projectId = projectId;
   if (type) where.type = type;
+  if (category) where.category = category;
+  if (tag) where.tags = { contains: tag };
+  if (search) {
+    where.name = { contains: search, mode: 'insensitive' };
+  }
 
   const assets = await prisma.videoAsset.findMany({
     where,
@@ -84,7 +97,42 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ success: true, data: assets });
 });
 
-// Get single asset
+router.get('/categories', async (req: Request, res: Response) => {
+  const projectId = req.query.projectId as string;
+
+  const where: any = {};
+  if (projectId) where.projectId = projectId;
+
+  const categories = await prisma.videoAsset.findMany({
+    where,
+    distinct: ['category'],
+    select: { category: true },
+  });
+
+  res.json({
+    success: true,
+    data: categories.map((c: any) => c.category).filter(Boolean),
+  });
+});
+
+router.get('/tags', async (req: Request, res: Response) => {
+  const projectId = req.query.projectId as string;
+
+  const where: any = {};
+  if (projectId) where.projectId = projectId;
+
+  const assets = await prisma.videoAsset.findMany({ where });
+  const allTags = new Set<string>();
+  assets.forEach((a: any) => {
+    if (a.tags) {
+      const tags = JSON.parse(a.tags) as string[];
+      tags.forEach((t: string) => allTags.add(t));
+    }
+  });
+
+  res.json({ success: true, data: Array.from(allTags) });
+});
+
 router.get('/:id', async (req: Request, res: Response) => {
   const asset = await prisma.videoAsset.findUnique({
     where: { id: req.params.id },
@@ -98,11 +146,11 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ success: true, data: asset });
 });
 
-// Upload file to Supabase Storage
-router.post('/upload', requireAuth, upload.single('file'), validate(uploadAssetSchema), async (req: Request, res: Response) => {
+router.post('/upload', requireAuth, upload.single('file'), async (req: Request & { file?: any }, res: Response) => {
   try {
-    const { projectId, type, name, duration, metadata } = req.body;
-    const file = req.file;
+    const body: any = req.body;
+    const { projectId, type, name, duration, metadata, tags, category } = body;
+    const file: any = req.file;
 
     if (!file) {
       return res.status(400).json({
@@ -115,7 +163,6 @@ router.post('/upload', requireAuth, upload.single('file'), validate(uploadAssetS
     const fileName = generateFileName(file.originalname);
     const filePath = `${projectId}/${fileName}`;
 
-    // Upload to Supabase Storage
     const { data, error } = await supabaseAdmin.storage
       .from(bucketName)
       .upload(filePath, file.buffer, {
@@ -131,12 +178,10 @@ router.post('/upload', requireAuth, upload.single('file'), validate(uploadAssetS
       });
     }
 
-    // Get public URL
     const { data: { publicUrl } } = supabaseAdmin.storage
       .from(bucketName)
-      .getPublicUrl(data.Key);
+      .getPublicUrl(data!.path);
 
-    // Create asset record
     const asset = await prisma.videoAsset.create({
       data: {
         projectId,
@@ -144,7 +189,9 @@ router.post('/upload', requireAuth, upload.single('file'), validate(uploadAssetS
         name,
         url: publicUrl,
         duration,
-        metadata: metadata || {},
+        metadata: typeof metadata === 'object' ? JSON.stringify(metadata) : metadata,
+        tags: typeof tags === 'object' ? JSON.stringify(tags) : tags,
+        category,
         createdBy: req.profile?.id,
       },
     });
@@ -159,10 +206,9 @@ router.post('/upload', requireAuth, upload.single('file'), validate(uploadAssetS
   }
 });
 
-// Create asset with external URL (for assets hosted elsewhere)
 router.post('/', requireAuth, validate(createAssetSchema), async (req: Request, res: Response) => {
   try {
-    const { projectId, type, name, url, duration, metadata } = req.body;
+    const { projectId, type, name, url, duration, metadata, tags, category } = req.body;
 
     const asset = await prisma.videoAsset.create({
       data: {
@@ -171,7 +217,9 @@ router.post('/', requireAuth, validate(createAssetSchema), async (req: Request, 
         name,
         url: url || '',
         duration,
-        metadata: metadata || {},
+        metadata: typeof metadata === 'object' ? JSON.stringify(metadata) : metadata,
+        tags: typeof tags === 'object' ? JSON.stringify(tags) : tags,
+        category,
         createdBy: req.profile?.id,
       },
     });
@@ -186,7 +234,95 @@ router.post('/', requireAuth, validate(createAssetSchema), async (req: Request, 
   }
 });
 
-// Delete asset
+router.put('/:id', requireAuth, validate(updateAssetSchema), async (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+    if (body.metadata && typeof body.metadata === 'object') {
+      body.metadata = JSON.stringify(body.metadata);
+    }
+    if (body.tags && typeof body.tags === 'object') {
+      body.tags = JSON.stringify(body.tags);
+    }
+
+    const asset = await prisma.videoAsset.update({
+      where: { id: req.params.id },
+      data: body,
+    });
+
+    res.json({ success: true, data: asset });
+  } catch (error: any) {
+    console.error('Update asset error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
+router.post('/upload/batch', requireAuth, upload.array('files', 10), async (req: Request & { files?: any[] }, res: Response) => {
+  try {
+    const body: any = req.body;
+    const { projectId, type, tags, category } = body;
+    const files: any[] = req.files || [];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'No files uploaded' }
+      });
+    }
+
+    const results: any[] = [];
+
+    for (const file of files) {
+      try {
+        const bucketName = getBucketName(type);
+        const fileName = generateFileName(file.originalname);
+        const filePath = `${projectId}/${fileName}`;
+
+        const { data, error } = await supabaseAdmin.storage
+          .from(bucketName)
+          .upload(filePath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false,
+          });
+
+        if (!error && data) {
+          const { data: { publicUrl } } = supabaseAdmin.storage
+            .from(bucketName)
+            .getPublicUrl(data.path);
+
+          const asset = await prisma.videoAsset.create({
+            data: {
+              projectId,
+              type: type as any,
+              name: file.originalname,
+              url: publicUrl,
+              tags: typeof tags === 'object' ? JSON.stringify(tags) : tags,
+              category,
+              createdBy: req.profile?.id,
+            },
+          });
+
+          results.push({ success: true, data: asset });
+        } else {
+          results.push({ success: false, error: error?.message || 'Upload failed' });
+        }
+      } catch (err) {
+        results.push({ success: false, error: (err as Error).message });
+      }
+    }
+
+    res.status(201).json({ success: true, data: results });
+  } catch (error: any) {
+    console.error('Batch upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
 router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const asset = await prisma.videoAsset.findUnique({
@@ -200,12 +336,14 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    // Delete from Supabase Storage if URL is from our storage
     if (asset.url && asset.url.includes('supabase.co/storage')) {
       try {
-        const urlPath = asset.url.split('/storage/v1/object/')[1];
-        if (urlPath) {
-          await supabaseAdmin.storage.removeAssets([urlPath]);
+        const urlParts = asset.url.split('/storage/v1/object/public/');
+        if (urlParts.length > 1) {
+          const path = urlParts[1];
+          const bucketName = path.split('/')[0];
+          const filePath = path.substring(bucketName.length + 1);
+          await supabaseAdmin.storage.from(bucketName).remove([filePath]);
         }
       } catch (storageError) {
         console.error('Storage delete error:', storageError);
@@ -223,7 +361,6 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-// Get signed URL for private assets
 router.get('/:id/signed-url', requireAuth, async (req: Request, res: Response) => {
   try {
     const asset = await prisma.videoAsset.findUnique({
@@ -244,21 +381,27 @@ router.get('/:id/signed-url', requireAuth, async (req: Request, res: Response) =
       });
     }
 
-    // Generate signed URL valid for 1 hour
-    const { data, error } = await supabaseAdmin.storage
-      .from(getBucketName(asset.type))
-      .createSignedUrl(asset.url.split('/').pop()!, 3600);
+    const urlParts = asset.url.split('/storage/v1/object/public/');
+    if (urlParts.length > 1) {
+      const path = urlParts[1];
+      const bucketName = path.split('/')[0];
+      const filePath = path.substring(bucketName.length + 1);
 
-    if (error) {
-      return res.json({
-        success: true,
-        data: { url: asset.url, signed: false }
-      });
+      const { data, error } = await supabaseAdmin.storage
+        .from(bucketName)
+        .createSignedUrl(filePath, 3600);
+
+      if (!error && data) {
+        return res.json({
+          success: true,
+          data: { url: data.signedUrl, signed: true }
+        });
+      }
     }
 
     res.json({
       success: true,
-      data: { url: data.signedUrl, signed: true }
+      data: { url: asset.url, signed: false }
     });
   } catch (error: any) {
     console.error('Get signed URL error:', error);

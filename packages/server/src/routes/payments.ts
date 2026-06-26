@@ -267,15 +267,35 @@ router.get('/qrcode/:orderNo', async (req: Request, res: Response) => {
   }
 });
 
-// Get user's orders
 router.get('/orders', requireAuth, async (req: Request, res: Response) => {
   try {
-    const orders = await prisma.order.findMany({
-      where: { profileId: req.profile!.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const status = req.query.status as string;
 
-    res.json({ success: true, data: orders });
+    const where: any = { profileId: req.profile!.id };
+    if (status) where.status = status;
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        items: orders,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error: any) {
     console.error('Get orders error:', error);
     res.status(500).json({
@@ -285,14 +305,147 @@ router.get('/orders', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-// Get payment config (public key for Alipay verification)
-router.get('/config', (req: res) => {
+router.get('/subscription', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const subscription = await prisma.subscription.findUnique({
+      where: { profileId: req.profile!.id },
+    });
+
+    if (!subscription) {
+      return res.json({
+        success: true,
+        data: {
+          plan: 'free',
+          status: 'inactive',
+          credits: 0,
+          currentPeriodStart: null,
+          currentPeriodEnd: null,
+        },
+      });
+    }
+
+    res.json({ success: true, data: subscription });
+  } catch (error: any) {
+    console.error('Get subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
+router.post('/subscription/renew', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const subscription = await prisma.subscription.findUnique({
+      where: { profileId: req.profile!.id },
+    });
+
+    if (!subscription || subscription.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'No active subscription to renew' }
+      });
+    }
+
+    const orderNo = generateOrderNo();
+    const order = await prisma.order.create({
+      data: {
+        profileId: req.profile!.id,
+        orderNo,
+        type: 'subscription',
+        amount: subscription.plan === 'pro' ? 99 : 299,
+        plan: subscription.plan,
+        credits: subscription.plan === 'pro' ? 999 : 0,
+        status: 'pending',
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        orderId: order.id,
+        orderNo: order.orderNo,
+        amount: order.amount,
+        plan: order.plan,
+      },
+    });
+  } catch (error: any) {
+    console.error('Renew subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
+router.post('/subscription/cancel', requireAuth, async (req: Request, res: Response) => {
+  try {
+    await prisma.subscription.update({
+      where: { profileId: req.profile!.id },
+      data: { status: 'cancelled' },
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
+router.post('/check-subscription', async (req: Request, res: Response) => {
+  try {
+    const { profileId } = req.body;
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { profileId },
+    });
+
+    if (!subscription) {
+      return res.json({
+        success: true,
+        data: { valid: false, message: 'No subscription found' }
+      });
+    }
+
+    const now = new Date();
+    const isValid = subscription.status === 'active' && 
+      subscription.currentPeriodEnd && 
+      subscription.currentPeriodEnd > now;
+
+    res.json({
+      success: true,
+      data: {
+        valid: isValid,
+        plan: subscription.plan,
+        status: subscription.status,
+        expiresAt: subscription.currentPeriodEnd?.toISOString(),
+        message: isValid ? 'Subscription is valid' : 'Subscription expired or inactive',
+      },
+    });
+  } catch (error: any) {
+    console.error('Check subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
+router.get('/config', (req: Request, res: Response) => {
   const alipayConfig = getAlipayConfig();
   res.json({
     success: true,
     data: {
       mode: alipayConfig.mode,
       alipayPublicKey: alipayConfig.mode === 'production' ? alipayConfig.alipayPublicKey : null,
+      plans: [
+        { id: 'free', name: '免费版', price: 0, credits: 100, features: ['基础脚本生成', '最多3个项目'] },
+        { id: 'pro', name: '专业版', price: 99, credits: 999, features: ['高级脚本生成', '无限项目', 'AI配音', '优先队列'] },
+        { id: 'enterprise', name: '企业版', price: 299, credits: 9999, features: ['全部功能', '无限项目', 'API访问', '专属客服'] },
+      ],
     },
   });
 });

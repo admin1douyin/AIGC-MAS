@@ -219,7 +219,7 @@ class AIService {
         throw new Error(`OpenAI API error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       return data.choices[0]?.message?.content || '';
     } catch (error) {
       console.error('[AIService] OpenAI error:', error);
@@ -240,7 +240,7 @@ class AIService {
           model: this.config.model,
           max_tokens: 2000,
           messages: [
-            ...(systemPrompt ? { role: 'user' as const, content: systemPrompt } : { role: 'user' as const, content: '' }),
+            ...(systemPrompt ? [{ role: 'user' as const, content: systemPrompt }] : []),
             { role: 'user' as const, content: prompt },
           ],
         }),
@@ -251,7 +251,8 @@ class AIService {
       }
 
       const data = await response.json();
-      return data.content[0]?.text || '';
+      const contentArray = (data as any).content || [];
+      return contentArray[0]?.text || '';
     } catch (error) {
       console.error('[AIService] Claude error:', error);
       return this.mockResponse(prompt);

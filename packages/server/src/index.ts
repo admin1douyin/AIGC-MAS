@@ -16,6 +16,11 @@ import tourismRoutes from './routes/tourism';
 import statsRoutes from './routes/stats';
 import authRoutes from './routes/auth';
 import paymentRoutes from './routes/payments';
+import commentRoutes from './routes/comments';
+import notificationRoutes from './routes/notifications';
+import episodeRoutes from './routes/episodes';
+import brandProfileRoutes from './routes/brandProfiles';
+import tourismResourceRoutes from './routes/tourismResources';
 import { agentEngine } from './agents/AgentEngine';
 
 const app = express();
@@ -40,6 +45,11 @@ app.use('/api/tourism', tourismRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/episodes', episodeRoutes);
+app.use('/api/brand-profiles', brandProfileRoutes);
+app.use('/api/tourism-resources', tourismResourceRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

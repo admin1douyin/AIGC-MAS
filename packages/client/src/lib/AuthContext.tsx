@@ -10,6 +10,9 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (password: string) => Promise<{ error: Error | null }>;
+  updateProfile: (data: { name?: string; avatar_url?: string }) => Promise<{ error: Error | null }>;
+  getProfile: () => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,7 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -29,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -66,8 +67,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+  };
+
+  const updateProfile = async (data: { name?: string; avatar_url?: string }) => {
+    const { error } = await supabase.auth.updateUser({ data });
+    return { error };
+  };
+
+  const getProfile = async () => {
+    if (!session?.access_token) return null;
+    const response = await fetch('/api/auth/profile', {
+      headers: { Authorization: `Bearer ${session.access_token}` }
+    });
+    return response.json();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, resetPassword }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, resetPassword, updatePassword, updateProfile, getProfile }}>
       {children}
     </AuthContext.Provider>
   );

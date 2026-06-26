@@ -401,6 +401,7 @@ model VideoAsset {
   size         Int?
   metadata     String?
   tags         String?
+  category     String?
   createdBy    String?
   createdAt    DateTime  @default(now())
 

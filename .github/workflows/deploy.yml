@@ -1,40 +1,36 @@
-name: Deploy to Vercel
+name: Deploy
 
 on:
   push:
-    branches:
-      - master
-      - main
+    branches: [master, main]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
-      - name: Install
-        run: npm install
-        
-      - name: Build
-        run: npm run build:client
+          cache: 'npm'
+      
+      - run: npm ci
+      
+      - run: npm run build:client
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      
+      - run: |
+          echo "=== Build Output ==="
+          ls -la packages/client/dist/
           
-      - name: Deploy
-        run: |
-          echo "Installing Vercel..."
-          npm i -g vercel
-          echo "Deploying..."
-          vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod --force
+          echo "=== Deploying to Vercel ==="
+          npx vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod --force
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

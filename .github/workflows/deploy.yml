@@ -11,13 +11,6 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -35,50 +28,38 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Show environment (debug)
-        run: |
-          echo "DATABASE_URL: ${DATABASE_URL:0:20}..."
-          echo "SUPABASE_URL: $SUPABASE_URL"
-          echo "Vercel Token exists: ${{ secrets.VERCEL_TOKEN != '' }}"
-          echo "Vercel Org ID exists: ${{ secrets.VERCEL_ORG_ID != '' }}"
-          echo "Vercel Project ID exists: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
-          
-      - name: Generate Prisma Client
-        run: npm run db:generate
-        continue-on-error: true
-        
-      - name: Build all packages
-        run: npm run build
+      - name: Build client
+        run: npm run build:client
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           
       - name: Verify build output
         run: |
-          echo "Build outputs:"
-          ls -la packages/client/dist/ 2>/dev/null || echo "Client dist not found"
-          ls -la packages/server/dist/ 2>/dev/null || echo "Server dist not found"
+          echo "Build verification:"
+          ls -lh packages/client/dist/
+          echo "---"
+          cat packages/client/dist/index.html | head -5
           
-      - name: Deploy to Vercel (Preview)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+      - name: Deploy to Vercel
+        run: |
+          echo "Installing Vercel CLI..."
+          npm install -g vercel@latest
+          
+          echo "Deploying to Vercel..."
+          vercel --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes \
+            --prod \
+            --public
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           
       - name: Health check
         run: |
-          sleep 15
-          DEPLOYMENT_URL="https://aigc-mas.vercel.app"
-          echo "Checking health at: $DEPLOYMENT_URL"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOYMENT_URL" || echo "000")
-          echo "HTTP Status Code: $HTTP_CODE"
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ Deployment successful!"
-          else
-            echo "⚠️  Health check returned $HTTP_CODE"
-          fi
+          sleep 20
+          echo "Checking deployment status..."
+          curl -I https://aigc-mas.vercel.app 2>&1 | head -10
           
   notify:
     needs: deploy
@@ -86,11 +67,12 @@ jobs:
     if: always()
     
     steps:
-      - name: Get deployment result
+      - name: Deployment result
         run: |
           if [ "${{ needs.deploy.result }}" = "success" ]; then
-            echo "🎉 AIGC-MAS deployed successfully to Vercel!"
-            echo "Deployment URL: https://aigc-mas.vercel.app"
+            echo "✅ AIGC-MAS 部署成功!"
+            echo "访问地址: https://aigc-mas.vercel.app"
           else
-            echo "❌ AIGC-MAS deployment failed. Please check the logs above."
+            echo "❌ 部署失败，请检查上方日志"
+            exit 1
           fi

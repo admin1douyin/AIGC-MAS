@@ -10,28 +10,28 @@
     --color-primary-light: #A29BFE;
     --color-primary-bg: rgba(108, 92, 231, 0.08);
     --color-primary-bg-hover: rgba(108, 92, 231, 0.14);
-    --color-bg: #0A0A0F;
-    --color-bg-elevated: #12121A;
-    --color-bg-surface: #1A1A26;
-    --color-bg-surface-hover: #222233;
-    --color-bg-overlay: rgba(10, 10, 15, 0.85);
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-border-hover: rgba(255, 255, 255, 0.15);
-    --color-border-strong: rgba(255, 255, 255, 0.2);
-    --color-text-primary: #F0F0F5;
-    --color-text-secondary: #9B9BB0;
-    --color-text-tertiary: #6B6B80;
-    --color-text-inverse: #0A0A0F;
+    --color-bg: #FFFFFF;
+    --color-bg-elevated: #F8FAFC;
+    --color-bg-surface: #F1F5F9;
+    --color-bg-surface-hover: #E2E8F0;
+    --color-bg-overlay: rgba(255, 255, 255, 0.95);
+    --color-border: #E2E8F0;
+    --color-border-hover: #CBD5E1;
+    --color-border-strong: #94A3B8;
+    --color-text-primary: #1E293B;
+    --color-text-secondary: #64748B;
+    --color-text-tertiary: #94A3B8;
+    --color-text-inverse: #FFFFFF;
     --color-text-accent: #6C5CE7;
     --gradient-primary: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #74B9FF 100%);
     --gradient-hero: linear-gradient(135deg, #6C5CE7 0%, #E17055 100%);
     --gradient-warm: linear-gradient(135deg, #E17055 0%, #FDCB6E 100%);
     --gradient-cool: linear-gradient(135deg, #00CEC9 0%, #6C5CE7 100%);
-    --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
-    --state-success: #00B894;
-    --state-warning: #FDCB6E;
-    --state-error: #E17055;
-    --state-info: #74B9FF;
+    --gradient-card: linear-gradient(180deg, rgba(108, 92, 231, 0.04) 0%, rgba(0, 0, 0, 0) 100%);
+    --state-success: #059669;
+    --state-warning: #D97706;
+    --state-error: #DC2626;
+    --state-info: #2563EB;
     --font-display: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
     --font-body: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -104,13 +104,13 @@
   }
 
   .vp-glow-border {
-    border: 1px solid rgba(108, 92, 231, 0.3);
-    box-shadow: 0 0 40px rgba(108, 92, 231, 0.15);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.08);
   }
 
   .vp-glow-border:hover {
-    border-color: rgba(108, 92, 231, 0.5);
-    box-shadow: 0 0 60px rgba(108, 92, 231, 0.25);
+    border-color: rgba(108, 92, 231, 0.4);
+    box-shadow: 0 0 30px rgba(108, 92, 231, 0.15);
   }
 
   .btn-primary {
@@ -156,7 +156,7 @@
   }
 
   .card-surface {
-    background: var(--color-bg-surface);
+    background: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     transition: all 250ms ease;
@@ -164,14 +164,14 @@
 
   .card-surface:hover {
     border-color: var(--color-border-hover);
-    box-shadow: 0 0 40px rgba(108, 92, 231, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   }
 
   .glass-nav {
-    background: rgba(10, 10, 15, 0.8);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .section-title {

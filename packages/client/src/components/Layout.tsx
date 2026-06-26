@@ -10,13 +10,19 @@ import {
   User,
   CreditCard,
   LogOut,
+  FolderOpen,
+  Bell,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 const navItems = [
   { path: '/', label: '总览', icon: LayoutDashboard },
   { path: '/projects', label: '项目管理', icon: Film },
-  { path: '/agents', label: '智能体', icon: Bot },
+  { path: '/assets', label: '素材管理', icon: FolderOpen },
+  { path: '/agent-market', label: '智能体市场', icon: Store },
+  { path: '/agents', label: '我的智能体', icon: Bot },
+  { path: '/notifications', label: '通知', icon: Bell },
 ];
 
 export default function Layout() {
@@ -190,9 +196,13 @@ export default function Layout() {
 function getPageTitle(path: string): string {
   if (path === '/') return '总览看板';
   if (path.startsWith('/projects/new')) return '新建项目';
+  if (path.startsWith('/projects/') && path.includes('/script')) return '脚本编辑器';
   if (path.startsWith('/projects/')) return '项目详情';
   if (path.startsWith('/projects')) return '项目管理';
-  if (path.startsWith('/agents')) return '智能体管理';
+  if (path.startsWith('/agent-market')) return '智能体市场';
+  if (path.startsWith('/agents')) return '我的智能体';
+  if (path.startsWith('/assets')) return '素材管理';
+  if (path.startsWith('/notifications')) return '通知中心';
   if (path.startsWith('/profile')) return '个人中心';
   if (path.startsWith('/subscription')) return '订阅管理';
   return '';

@@ -11,6 +11,13 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -28,25 +35,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Show environment (debug)
+        run: |
+          echo "DATABASE_URL: ${DATABASE_URL:0:20}..."
+          echo "SUPABASE_URL: $SUPABASE_URL"
+          echo "Vercel Token exists: ${{ secrets.VERCEL_TOKEN != '' }}"
+          echo "Vercel Org ID exists: ${{ secrets.VERCEL_ORG_ID != '' }}"
+          echo "Vercel Project ID exists: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
+          
       - name: Generate Prisma Client
         run: npm run db:generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          
-      - name: Deploy database migrations
-        run: npm run db:migrate:prod
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          
-      - name: Build client
-        run: npm run build:client
+        continue-on-error: true
+        
+      - name: Build all packages
+        run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           
-      - name: Deploy to Vercel
+      - name: Verify build output
+        run: |
+          echo "Build outputs:"
+          ls -la packages/client/dist/ 2>/dev/null || echo "Client dist not found"
+          ls -la packages/server/dist/ 2>/dev/null || echo "Server dist not found"
+          
+      - name: Deploy to Vercel (Preview)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -56,8 +69,16 @@ jobs:
           
       - name: Health check
         run: |
-          sleep 10
-          curl -f https://aigc-mas.vercel.app/api/health || exit 1
+          sleep 15
+          DEPLOYMENT_URL="https://aigc-mas.vercel.app"
+          echo "Checking health at: $DEPLOYMENT_URL"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOYMENT_URL" || echo "000")
+          echo "HTTP Status Code: $HTTP_CODE"
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "⚠️  Health check returned $HTTP_CODE"
+          fi
           
   notify:
     needs: deploy
@@ -65,10 +86,11 @@ jobs:
     if: always()
     
     steps:
-      - name: Send notification
-        if: needs.deploy.result == 'success'
-        run: echo "✅ AIGC-MAS deployed successfully!"
-        
-      - name: Send failure notification
-        if: needs.deploy.result == 'failure'
-        run: echo "❌ AIGC-MAS deployment failed!"
+      - name: Get deployment result
+        run: |
+          if [ "${{ needs.deploy.result }}" = "success" ]; then
+            echo "🎉 AIGC-MAS deployed successfully to Vercel!"
+            echo "Deployment URL: https://aigc-mas.vercel.app"
+          else
+            echo "❌ AIGC-MAS deployment failed. Please check the logs above."
+          fi

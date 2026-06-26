@@ -15,6 +15,12 @@ import tourismRoutes from '../packages/server/src/routes/tourism';
 import statsRoutes from '../packages/server/src/routes/stats';
 import authRoutes from '../packages/server/src/routes/auth';
 import paymentRoutes from '../packages/server/src/routes/payments';
+import commentRoutes from '../packages/server/src/routes/comments';
+import notificationRoutes from '../packages/server/src/routes/notifications';
+import episodeRoutes from '../packages/server/src/routes/episodes';
+import brandProfileRoutes from '../packages/server/src/routes/brandProfiles';
+import tourismResourceRoutes from '../packages/server/src/routes/tourismResources';
+import organizationRoutes from '../packages/server/src/routes/organizations';
 import { agentEngine } from '../packages/server/src/agents/AgentEngine';
 
 let app: express.Express | null = null;
@@ -52,6 +58,12 @@ async function getApp(): Promise<express.Express> {
   app.use('/api/stats', statsRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/payments', paymentRoutes);
+  app.use('/api/comments', commentRoutes);
+  app.use('/api/notifications', notificationRoutes);
+  app.use('/api/episodes', episodeRoutes);
+  app.use('/api/brand-profiles', brandProfileRoutes);
+  app.use('/api/tourism-resources', tourismResourceRoutes);
+  app.use('/api/organizations', organizationRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

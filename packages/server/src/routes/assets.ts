@@ -259,11 +259,11 @@ router.put('/:id', requireAuth, validate(updateAssetSchema), async (req: Request
   }
 });
 
-router.post('/upload/batch', requireAuth, upload.array('files', 10), async (req: Request & { files?: any[] }, res: Response) => {
+router.post('/upload/batch', requireAuth, upload.array('files', 10), async (req: Request, res: Response) => {
   try {
     const body: any = req.body;
     const { projectId, type, tags, category } = body;
-    const files: any[] = req.files || [];
+    const files = (req.files as Express.Multer.File[]) || [];
 
     if (!files || files.length === 0) {
       return res.status(400).json({

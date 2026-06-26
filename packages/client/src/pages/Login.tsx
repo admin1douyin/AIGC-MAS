@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const from = (location.state as any)?.from?.pathname || '/app';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +26,7 @@ export default function Login() {
       if (result.error) {
         setError(result.error.message || '登录失败，请检查邮箱和密码');
       } else {
-        navigate('/app');
+        navigate(from, { replace: true });
       }
     } catch (err: any) {
       setError(err.message || '登录过程中出现错误');

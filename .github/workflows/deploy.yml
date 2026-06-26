@@ -5,10 +5,6 @@ on:
     branches:
       - master
       - main
-  pull_request:
-    branches:
-      - master
-      - main
   workflow_dispatch:
 
 jobs:
@@ -16,63 +12,29 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
           
-      - name: Install dependencies
-        run: npm ci
+      - name: Install
+        run: npm install
         
-      - name: Build client
+      - name: Build
         run: npm run build:client
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           
-      - name: Verify build output
+      - name: Deploy
         run: |
-          echo "Build verification:"
-          ls -lh packages/client/dist/
-          echo "---"
-          cat packages/client/dist/index.html | head -5
-          
-      - name: Deploy to Vercel
-        run: |
-          echo "Installing Vercel CLI..."
-          npm install -g vercel@latest
-          
-          echo "Deploying to Vercel..."
-          vercel --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes \
-            --prod \
-            --public
+          echo "Installing Vercel..."
+          npm i -g vercel
+          echo "Deploying..."
+          vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod --force
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          
-      - name: Health check
-        run: |
-          sleep 20
-          echo "Checking deployment status..."
-          curl -I https://aigc-mas.vercel.app 2>&1 | head -10
-          
-  notify:
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-      - name: Deployment result
-        run: |
-          if [ "${{ needs.deploy.result }}" = "success" ]; then
-            echo "✅ AIGC-MAS 部署成功!"
-            echo "访问地址: https://aigc-mas.vercel.app"
-          else
-            echo "❌ 部署失败，请检查上方日志"
-            exit 1
-          fi

@@ -5,10 +5,5 @@
   "installCommand": "npm install",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }

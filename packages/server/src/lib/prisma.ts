@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 
 const jsonFields: Record<string, string[]> = {
   Project: ['brief', 'tags'],

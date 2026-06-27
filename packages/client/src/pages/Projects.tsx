@@ -84,43 +84,41 @@ export default function Projects() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">项目管理</h1>
-          <p className="text-slate-500 mt-1">管理所有视频制作项目</p>
+          <h1 className="text-2xl font-bold text-text-primary">项目管理</h1>
+          <p className="text-text-secondary mt-1">管理所有视频制作项目</p>
         </div>
         <button
           onClick={() => navigate('/app/projects/new')}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          className="btn-primary flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           新建项目
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
+      <div className="card-surface p-4">
         <div className="flex flex-wrap items-center gap-4">
           <form onSubmit={handleSearch} className="flex-1 min-w-[200px] max-w-md">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
               <input
                 type="text"
                 placeholder="搜索项目名称..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
           </form>
 
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400" />
+            <Filter className="w-4 h-4 text-text-tertiary" />
             <select
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-bg"
             >
               <option value="">全部类型</option>
               <option value="short_drama">短剧生产</option>
@@ -130,7 +128,7 @@ export default function Projects() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-bg"
             >
               <option value="">全部状态</option>
               <option value="draft">草稿</option>
@@ -143,17 +141,16 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Project List */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="card-surface overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400">加载中...</div>
+          <div className="p-12 text-center text-text-tertiary">加载中...</div>
         ) : projects.length === 0 ? (
           <div className="p-12 text-center">
-            <Film className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-            <p className="text-slate-500 mb-4">暂无项目</p>
+            <Film className="w-16 h-16 text-border mx-auto mb-4" />
+            <p className="text-text-secondary mb-4">暂无项目</p>
             <button
               onClick={() => navigate('/app/projects/new')}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-primary hover:text-primary-hover font-medium"
             >
               创建第一个项目
             </button>
@@ -161,44 +158,44 @@ export default function Projects() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-bg-elevated border-b border-border">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     项目
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     类型
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     进度
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     状态
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     创建时间
                   </th>
-                  <th className="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="text-right px-6 py-3 text-xs font-medium text-text-secondary uppercase tracking-wider">
                     操作
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {projects.map((project) => (
-                  <tr key={project.id} className="hover:bg-slate-50">
+                  <tr key={project.id} className="hover:bg-bg-elevated">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
                           <Film className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <div
-                            className="font-medium text-slate-800 cursor-pointer hover:text-blue-600"
+                            className="font-medium text-text-primary cursor-pointer hover:text-primary"
                             onClick={() => navigate(`/app/projects/${project.id}`)}
                           >
                             {project.name}
                           </div>
-                          <div className="text-xs text-slate-500 truncate max-w-xs">
+                          <div className="text-xs text-text-secondary truncate max-w-xs">
                             {project.description}
                           </div>
                         </div>
@@ -211,13 +208,13 @@ export default function Projects() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-24 h-2 bg-bg-surface rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 rounded-full"
+                            className="h-full bg-primary rounded-full"
                             style={{ width: `${project.progress}%` }}
                           />
                         </div>
-                        <span className="text-sm text-slate-600">{project.progress}%</span>
+                        <span className="text-sm text-text-secondary">{project.progress}%</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -225,14 +222,14 @@ export default function Projects() {
                         {getStatusLabel(project.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
+                    <td className="px-6 py-4 text-sm text-text-secondary">
                       {new Date(project.createdAt).toLocaleDateString('zh-CN')}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/app/projects/${project.id}`)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-1.5 text-text-tertiary hover:text-primary hover:bg-primary-bg rounded transition-colors"
                           title="查看"
                         >
                           <Eye className="w-4 h-4" />
@@ -240,7 +237,7 @@ export default function Projects() {
                         {project.status === 'draft' || project.status === 'planning' ? (
                           <button
                             onClick={() => handleStart(project.id)}
-                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                            className="p-1.5 text-text-tertiary hover:text-state-success hover:bg-teal/10 rounded transition-colors"
                             title="启动"
                           >
                             <Play className="w-4 h-4" />
@@ -248,7 +245,7 @@ export default function Projects() {
                         ) : project.status === 'in_production' ? (
                           <button
                             onClick={() => handlePause(project.id)}
-                            className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            className="p-1.5 text-text-tertiary hover:text-state-warning hover:bg-amber-50 rounded transition-colors"
                             title="暂停"
                           >
                             <Pause className="w-4 h-4" />
@@ -256,7 +253,7 @@ export default function Projects() {
                         ) : null}
                         <button
                           onClick={() => handleDelete(project.id)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-1.5 text-text-tertiary hover:text-state-error hover:bg-red-50 rounded transition-colors"
                           title="删除"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -270,25 +267,24 @@ export default function Projects() {
           </div>
         )}
 
-        {/* Pagination */}
         {total > 10 && (
-          <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-            <div className="text-sm text-slate-500">
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-text-secondary">
               共 {total} 个项目
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 border border-slate-200 rounded text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-border rounded text-sm text-text-secondary hover:bg-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 上一页
               </button>
-              <span className="text-sm text-slate-600">第 {page} 页</span>
+              <span className="text-sm text-text-secondary">第 {page} 页</span>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page * 10 >= total}
-                className="px-3 py-1.5 border border-slate-200 rounded text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-border rounded text-sm text-text-secondary hover:bg-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 下一页
               </button>
@@ -311,11 +307,11 @@ function getTypeLabel(type: string) {
 
 function getTypeStyle(type: string) {
   const map: Record<string, string> = {
-    short_drama: 'bg-blue-100 text-blue-700',
-    corporate_video: 'bg-emerald-100 text-emerald-700',
-    tourism_promo: 'bg-amber-100 text-amber-700',
+    short_drama: 'bg-primary-bg text-primary',
+    corporate_video: 'bg-teal/10 text-teal',
+    tourism_promo: 'bg-warm/10 text-warm',
   };
-  return map[type] || 'bg-slate-100 text-slate-700';
+  return map[type] || 'bg-bg-surface text-text-secondary';
 }
 
 function getStatusLabel(status: string) {
@@ -336,16 +332,16 @@ function getStatusLabel(status: string) {
 
 function getStatusStyle(status: string) {
   const map: Record<string, string> = {
-    draft: 'bg-slate-100 text-slate-700',
-    planning: 'bg-blue-100 text-blue-700',
-    in_production: 'bg-amber-100 text-amber-700',
-    in_review: 'bg-purple-100 text-purple-700',
-    review: 'bg-purple-100 text-purple-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    cancelled: 'bg-red-100 text-red-700',
-    paused: 'bg-orange-100 text-orange-700',
-    failed: 'bg-red-100 text-red-700',
-    archived: 'bg-slate-100 text-slate-500',
+    draft: 'bg-bg-surface text-text-secondary',
+    planning: 'bg-blue-50 text-blue-600',
+    in_production: 'bg-amber-50 text-amber-600',
+    in_review: 'bg-primary-bg text-primary',
+    review: 'bg-primary-bg text-primary',
+    completed: 'bg-teal/10 text-state-success',
+    cancelled: 'bg-red-50 text-state-error',
+    paused: 'bg-orange-50 text-state-warning',
+    failed: 'bg-red-50 text-state-error',
+    archived: 'bg-bg-surface text-text-tertiary',
   };
-  return map[status] || 'bg-slate-100 text-slate-700';
+  return map[status] || 'bg-bg-surface text-text-secondary';
 }

@@ -128,8 +128,23 @@ router.post('/', requireAuth, validate(createProjectSchema), async (req: Request
   res.status(201).json({ success: true, data: project });
 });
 
-router.put('/:id', validate(updateProjectSchema), async (req: Request, res: Response) => {
-  const project = await prisma.project.update({
+router.put('/:id', requireAuth, validate(updateProjectSchema), async (req: Request, res: Response) => {
+  const project = await prisma.project.findUnique({ where: { id: req.params.id } });
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Project not found' },
+    });
+  }
+
+  if (project.ownerId !== req.profile!.id) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only update your own projects' },
+    });
+  }
+
+  const updatedProject = await prisma.project.update({
     where: { id: req.params.id },
     data: req.body,
     include: {
@@ -137,18 +152,40 @@ router.put('/:id', validate(updateProjectSchema), async (req: Request, res: Resp
     },
   });
 
-  res.json({ success: true, data: project });
+  res.json({ success: true, data: updatedProject });
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
+  const project = await prisma.project.findUnique({ where: { id: req.params.id } });
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Project not found' },
+    });
+  }
+
+  if (project.ownerId !== req.profile!.id) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only delete your own projects' },
+    });
+  }
+
   await prisma.project.delete({ where: { id: req.params.id } });
   res.json({ success: true });
 });
 
-router.post('/:id/start', async (req: Request, res: Response) => {
+router.post('/:id/start', requireAuth, async (req: Request, res: Response) => {
   const project = await prisma.project.findUnique({ where: { id: req.params.id } });
   if (!project) {
     return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
+  }
+
+  if (project.ownerId !== req.profile!.id) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only start your own projects' },
+    });
   }
 
   const result = await agentEngine.startProject(project.id);
@@ -156,12 +193,36 @@ router.post('/:id/start', async (req: Request, res: Response) => {
   res.json({ success: true, data: result });
 });
 
-router.post('/:id/pause', async (req: Request, res: Response) => {
+router.post('/:id/pause', requireAuth, async (req: Request, res: Response) => {
+  const project = await prisma.project.findUnique({ where: { id: req.params.id } });
+  if (!project) {
+    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
+  }
+
+  if (project.ownerId !== req.profile!.id) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only pause your own projects' },
+    });
+  }
+
   const result = await agentEngine.pauseProject(req.params.id);
   res.json({ success: true, data: result });
 });
 
-router.post('/:id/resume', async (req: Request, res: Response) => {
+router.post('/:id/resume', requireAuth, async (req: Request, res: Response) => {
+  const project = await prisma.project.findUnique({ where: { id: req.params.id } });
+  if (!project) {
+    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
+  }
+
+  if (project.ownerId !== req.profile!.id) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'You can only resume your own projects' },
+    });
+  }
+
   const result = await agentEngine.resumeProject(req.params.id);
   res.json({ success: true, data: result });
 });

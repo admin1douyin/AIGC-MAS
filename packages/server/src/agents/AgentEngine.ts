@@ -1004,7 +1004,7 @@ class AgentEngine {
   }) {
     return prisma.agentMessage.create({
       data: {
-        fromAgentId: params.fromAgentId || 'system',
+        fromAgentId: params.fromAgentId,
         toAgentId: params.toAgentId,
         projectId: params.projectId,
         taskId: params.taskId,

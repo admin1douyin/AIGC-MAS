@@ -22,6 +22,7 @@ import notificationRoutes from './routes/notifications';
 import episodeRoutes from './routes/episodes';
 import brandProfileRoutes from './routes/brandProfiles';
 import tourismResourceRoutes from './routes/tourismResources';
+import organizationRoutes from './routes/organizations';
 import { agentEngine } from './agents/AgentEngine';
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/episodes', episodeRoutes);
 app.use('/api/brand-profiles', brandProfileRoutes);
 app.use('/api/tourism-resources', tourismResourceRoutes);
+app.use('/api/organizations', organizationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

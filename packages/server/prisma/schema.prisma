@@ -335,8 +335,8 @@ model AgentTask {
 
 model AgentMessage {
   id          String      @id @default(uuid())
-  fromAgentId String
-  fromAgent   Agent       @relation("SentMessages", fields: [fromAgentId], references: [id])
+  fromAgentId String?
+  fromAgent   Agent?      @relation("SentMessages", fields: [fromAgentId], references: [id])
   toAgentId   String?
   toAgent     Agent?      @relation("ReceivedMessages", fields: [toAgentId], references: [id])
   projectId   String

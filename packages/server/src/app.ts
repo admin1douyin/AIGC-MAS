@@ -89,14 +89,15 @@ app.get('/api/debug/db', async (_req: Request, res: Response) => {
     const apiTimeout = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Supabase API timeout after 8s')), 8000)
     );
-    const apiResponse = await Promise.race([fetchPromise, apiTimeout]) as Response;
-    if (apiResponse.status === 200) {
+    const apiResponse = await Promise.race([fetchPromise, apiTimeout]) as globalThis.Response;
+    const statusCode = apiResponse.status;
+    if (statusCode === 200) {
       supabaseApiStatus = 'ok';
-    } else if (apiResponse.status === 401) {
+    } else if (statusCode === 401) {
       supabaseApiStatus = 'invalid_key';
       supabaseApiError = '401 Unauthorized - API key is invalid';
     } else {
-      supabaseApiStatus = `http_${apiResponse.status}`;
+      supabaseApiStatus = `http_${statusCode}`;
     }
   } catch (error: any) {
     supabaseApiStatus = 'error';

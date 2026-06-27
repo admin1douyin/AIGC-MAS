@@ -1,51 +1,70 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-// Static import so Vercel's builder traces & bundles the full server dependency
-// tree (express, prisma, routes, etc.) into the serverless function.
-import app, { ensureInitialized } from '../packages/server/dist/app';
+
+type AppHandler = (req: IncomingMessage, res: ServerResponse) => void;
+type EnsureInitialized = () => Promise<void>;
+
+let _app: AppHandler | null = null;
+let _ensureInitialized: EnsureInitialized | null = null;
+let _loadError: Error | null = null;
+
+/**
+ * Lazy-load the Express app so module loading errors can be caught
+ * and reported, instead of causing FUNCTION_INVOCATION_FAILED.
+ * @vercel/nft traces the dynamic import to bundle all server deps.
+ */
+async function loadServer(): Promise<{ app: AppHandler; ensureInitialized: EnsureInitialized }> {
+  if (_loadError) throw _loadError;
+  if (_app && _ensureInitialized) return { app: _app, ensureInitialized: _ensureInitialized };
+
+  try {
+    const mod = await import('../packages/server/dist/app');
+    _app = mod.default;
+    _ensureInitialized = mod.ensureInitialized;
+    return { app: _app!, ensureInitialized: _ensureInitialized! };
+  } catch (error: any) {
+    _loadError = error;
+    throw error;
+  }
+}
 
 /**
  * Vercel Serverless Function - Single API handler for ALL /api/* routes.
  *
- * Why a single file instead of catch-all `[...path].ts`?
- * Vercel's file-based catch-all `[...path]` does not reliably match
- * multi-segment paths (e.g. /api/agents/registry/list). This file is
- * routed via vercel.json `rewrites` instead, which correctly handles
- * all /api/* paths regardless of segment count.
- *
- * URL preservation:
- * Vercel rewrites preserve the original URL in req.url, so Express
- * sees the correct path (e.g. /api/agents/registry/list) and routes
- * accordingly. The destination /api/main only determines which
- * function to invoke.
+ * Routed via vercel.json `rewrites` (not file-based catch-all) because
+ * Vercel's [...path] catch-all does not reliably match multi-segment paths.
  */
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   console.log(`[API] ${req.method} ${req.url}`);
 
-  // Fallback: if Vercel set req.url to the destination path, recover
-  // the original URL from the x-forwarded-uri header.
-  const forwardedUri = req.headers['x-forwarded-uri'] as string | undefined;
-  if (forwardedUri && req.url !== forwardedUri) {
-    console.log(`[API] Recovering original URL: ${forwardedUri} (was ${req.url})`);
-    req.url = forwardedUri;
-  }
-
   try {
-    await ensureInitialized();
-  } catch (initError) {
-    console.error('[API] Initialization failed:', initError);
-    // Continue anyway - some routes (like /api/health) don't need DB
-  }
+    const { app, ensureInitialized } = await loadServer();
 
-  try {
+    // Recover original URL if Vercel rewrote it to /api/main
+    const forwardedUri = req.headers['x-forwarded-uri'] as string | undefined;
+    if (forwardedUri && req.url !== forwardedUri) {
+      console.log(`[API] Recovering original URL: ${forwardedUri} (was ${req.url})`);
+      req.url = forwardedUri;
+    }
+
+    try {
+      await ensureInitialized();
+    } catch (initError) {
+      console.error('[API] Initialization failed:', initError);
+    }
+
     return app(req, res);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Handler error:', error);
     if (!res.headersSent) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({
         success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: error?.message || 'Internal server error',
+          stack: error?.stack?.split('\n').slice(0, 5),
+        },
       }));
     }
   }

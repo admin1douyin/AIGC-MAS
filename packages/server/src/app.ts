@@ -72,6 +72,37 @@ app.get('/api/debug/db', async (_req: Request, res: Response) => {
     dbError = error?.message || String(error);
   }
 
+  // Check Supabase keys
+  const anonKey = process.env.SUPABASE_ANON_KEY || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const anonKeyParts = anonKey ? anonKey.split('.').length : 0;
+  const serviceKeyParts = serviceKey ? serviceKey.split('.').length : 0;
+
+  // Test Supabase REST API with anon key
+  let supabaseApiStatus = 'unknown';
+  let supabaseApiError = '';
+  try {
+    const testUrl = `${supabaseUrl}/rest/v1/`;
+    const fetchPromise = fetch(testUrl, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+    });
+    const apiTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase API timeout after 8s')), 8000)
+    );
+    const apiResponse = await Promise.race([fetchPromise, apiTimeout]) as Response;
+    if (apiResponse.status === 200) {
+      supabaseApiStatus = 'ok';
+    } else if (apiResponse.status === 401) {
+      supabaseApiStatus = 'invalid_key';
+      supabaseApiError = '401 Unauthorized - API key is invalid';
+    } else {
+      supabaseApiStatus = `http_${apiResponse.status}`;
+    }
+  } catch (error: any) {
+    supabaseApiStatus = 'error';
+    supabaseApiError = error?.message || String(error);
+  }
+
   res.json({
     success: true,
     data: {
@@ -85,6 +116,18 @@ app.get('/api/debug/db', async (_req: Request, res: Response) => {
         queryTimeMs: Date.now() - startTime,
       },
       supabaseUrl,
+      supabaseKeys: {
+        anonKeySet: !!anonKey,
+        anonKeyLength: anonKey.length,
+        anonKeyParts, // Should be 3 for a valid JWT
+        serviceKeySet: !!serviceKey,
+        serviceKeyLength: serviceKey.length,
+        serviceKeyParts, // Should be 3 for a valid JWT
+      },
+      supabaseApi: {
+        status: supabaseApiStatus,
+        error: supabaseApiError || undefined,
+      },
     },
   });
 });

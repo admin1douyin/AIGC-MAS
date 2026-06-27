@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ const updateCorporateSchema = z.object({
   callToAction: z.string().optional(),
 });
 
-router.get('/:projectId', async (req: Request, res: Response) => {
+router.get('/:projectId', optionalAuth, async (req: Request, res: Response) => {
   const data = await prisma.corporateVideoProject.findUnique({
     where: { projectId: req.params.projectId },
     include: { project: true },
@@ -27,7 +28,7 @@ router.get('/:projectId', async (req: Request, res: Response) => {
   res.json({ success: true, data });
 });
 
-router.put('/:projectId', validate(updateCorporateSchema), async (req: Request, res: Response) => {
+router.put('/:projectId', requireAuth, validate(updateCorporateSchema), async (req: Request, res: Response) => {
   const data = await prisma.corporateVideoProject.update({
     where: { projectId: req.params.projectId },
     data: req.body,
@@ -36,7 +37,7 @@ router.put('/:projectId', validate(updateCorporateSchema), async (req: Request, 
   res.json({ success: true, data });
 });
 
-router.post('/:projectId/generate-marketing-plan', async (req: Request, res: Response) => {
+router.post('/:projectId/generate-marketing-plan', requireAuth, async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const project = await prisma.project.findUnique({ where: { id: projectId }, include: { corporateVideo: true } });
   if (!project) {
@@ -59,7 +60,7 @@ router.post('/:projectId/generate-marketing-plan', async (req: Request, res: Res
   res.json({ success: true, data: marketingPlan });
 });
 
-router.post('/:projectId/generate-script', async (req: Request, res: Response) => {
+router.post('/:projectId/generate-script', requireAuth, async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const project = await prisma.project.findUnique({ where: { id: projectId }, include: { corporateVideo: true } });
   if (!project) {

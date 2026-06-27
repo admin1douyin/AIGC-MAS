@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ const updateShortDramaSchema = z.object({
   targetPlatform: z.string().optional(),
 });
 
-router.get('/:projectId', async (req: Request, res: Response) => {
+router.get('/:projectId', optionalAuth, async (req: Request, res: Response) => {
   const data = await prisma.shortDramaProject.findUnique({
     where: { projectId: req.params.projectId },
     include: { project: true },
@@ -28,7 +29,7 @@ router.get('/:projectId', async (req: Request, res: Response) => {
   res.json({ success: true, data });
 });
 
-router.put('/:projectId', validate(updateShortDramaSchema), async (req: Request, res: Response) => {
+router.put('/:projectId', requireAuth, validate(updateShortDramaSchema), async (req: Request, res: Response) => {
   const data = await prisma.shortDramaProject.update({
     where: { projectId: req.params.projectId },
     data: req.body,
@@ -37,7 +38,7 @@ router.put('/:projectId', validate(updateShortDramaSchema), async (req: Request,
   res.json({ success: true, data });
 });
 
-router.post('/:projectId/generate-script', async (req: Request, res: Response) => {
+router.post('/:projectId/generate-script', requireAuth, async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const project = await prisma.project.findUnique({ where: { id: projectId }, include: { shortDrama: true } });
   if (!project) {

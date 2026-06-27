@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { agentEngine } from '../agents/AgentEngine';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', requireAuth, async (req: Request, res: Response) => {
   const projectId = req.query.projectId as string;
   const role = req.query.role as string;
   const status = req.query.status as string;
@@ -22,7 +23,7 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ success: true, data: agents });
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', requireAuth, async (req: Request, res: Response) => {
   const agent = await prisma.agent.findUnique({
     where: { id: req.params.id },
     include: {
@@ -38,7 +39,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ success: true, data: agent });
 });
 
-router.get('/:id/messages', async (req: Request, res: Response) => {
+router.get('/:id/messages', requireAuth, async (req: Request, res: Response) => {
   const agentId = req.params.id;
   const projectId = req.query.projectId as string;
 
@@ -60,7 +61,7 @@ router.get('/:id/messages', async (req: Request, res: Response) => {
   res.json({ success: true, data: messages.reverse() });
 });
 
-router.get('/registry/list', async (_req: Request, res: Response) => {
+router.get('/registry/list', requireAuth, async (_req: Request, res: Response) => {
   const registry = agentEngine.getAgentRegistry();
   res.json({ success: true, data: registry });
 });

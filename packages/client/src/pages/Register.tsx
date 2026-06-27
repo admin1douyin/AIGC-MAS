@@ -32,8 +32,8 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('密码至少需要6个字符');
+    if (password.length < 8) {
+      setError('密码至少需要8个字符');
       return;
     }
 
@@ -142,7 +142,7 @@ export default function Register() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="创建密码"
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full pl-11 pr-12 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
                 <button

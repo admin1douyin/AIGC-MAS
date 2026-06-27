@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/overview', async (_req: Request, res: Response) => {
+router.get('/overview', requireAuth, async (_req: Request, res: Response) => {
   const [totalProjects, totalAgents, totalTasks, totalScripts] = await Promise.all([
     prisma.project.count(),
     prisma.agent.count(),
@@ -41,7 +42,7 @@ router.get('/overview', async (_req: Request, res: Response) => {
   });
 });
 
-router.get('/projects/trend', async (_req: Request, res: Response) => {
+router.get('/projects/trend', requireAuth, async (_req: Request, res: Response) => {
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: 'asc' },
     select: { createdAt: true, type: true },

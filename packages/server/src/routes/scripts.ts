@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const updateScriptSchema = z.object({
   scenes: z.array(z.any()).optional(),
 });
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', optionalAuth, async (req: Request, res: Response) => {
   const projectId = req.query.projectId as string;
 
   const where: any = {};
@@ -30,7 +31,7 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ success: true, data: scripts });
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', optionalAuth, async (req: Request, res: Response) => {
   const script = await prisma.videoScript.findUnique({
     where: { id: req.params.id },
     include: {
@@ -46,7 +47,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ success: true, data: script });
 });
 
-router.post('/', validate(createScriptSchema), async (req: Request, res: Response) => {
+router.post('/', requireAuth, validate(createScriptSchema), async (req: Request, res: Response) => {
   const data = req.body;
   const totalDuration = data.scenes?.reduce((acc: number, s: any) => acc + (s.duration || 0), 0) || 0;
 
@@ -63,7 +64,7 @@ router.post('/', validate(createScriptSchema), async (req: Request, res: Respons
   res.status(201).json({ success: true, data: script });
 });
 
-router.put('/:id', validate(updateScriptSchema), async (req: Request, res: Response) => {
+router.put('/:id', requireAuth, validate(updateScriptSchema), async (req: Request, res: Response) => {
   const data = req.body;
   const existing = await prisma.videoScript.findUnique({ where: { id: req.params.id } });
   if (!existing) {
@@ -86,7 +87,7 @@ router.put('/:id', validate(updateScriptSchema), async (req: Request, res: Respo
   res.json({ success: true, data: script });
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   await prisma.videoScript.delete({ where: { id: req.params.id } });
   res.json({ success: true });
 });

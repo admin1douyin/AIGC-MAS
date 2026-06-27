@@ -152,11 +152,14 @@ export default function Subscription() {
       });
 
       const result = await response.json();
-      
+
       if (result.success && result.data?.paymentUrl) {
-        // In production, redirect to Alipay
-        // For now, show success and update subscription locally
-        alert('订阅成功！（演示模式）');
+        // Redirect to Alipay payment page (production or sandbox)
+        // The backend returns the appropriate paymentUrl based on ALIPAY_* env vars
+        window.location.href = result.data.paymentUrl;
+      } else if (result.success && result.data?.mode === 'mock') {
+        // Mock mode without a real payment URL - update subscription locally
+        alert('订单已创建（演示模式），订阅已激活');
         loadSubscription();
       } else {
         alert(result.error?.message || '创建订单失败');

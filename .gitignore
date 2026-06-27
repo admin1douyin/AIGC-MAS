@@ -26,6 +26,6 @@ coverage
 
 .vercel
 
-# Prisma generated client (custom output path - generated during build)
-packages/server/generated
+# Prisma generated client (generated during build, default location in node_modules)
 packages/server/src/generated
+packages/server/generated

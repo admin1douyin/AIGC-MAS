@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { AgentRole, TaskStatus, ProjectType, MessageType } from '../../generated/prisma';
+import { AgentRole, TaskStatus, ProjectType, MessageType } from '@prisma/client';
 
 interface AgentDefinition {
   role: AgentRole;

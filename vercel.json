@@ -3,6 +3,7 @@
   "buildCommand": "npm run vercel:build",
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
+  "regions": ["sin1"],
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 60,

@@ -64,9 +64,28 @@ function transformData(data: any, model: string): any {
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
+// Ensure DATABASE_URL has PgBouncer params for serverless connection pooling
+function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL || '';
+  if (!url) return url;
+  // Add pooler params if missing (required for Supabase + Vercel serverless)
+  if (!url.includes('pgbouncer=')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}pgbouncer=true&connection_limit=1&pool_timeout=30`;
+  }
+  return url;
+}
+
 // Use Prisma client extension (the modern replacement for the removed $use middleware)
 function createPrismaClient(): PrismaClient {
-  const client = new PrismaClient();
+  const client = new PrismaClient({
+    log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['error', 'warn', 'info'],
+    datasources: {
+      db: {
+        url: getDatabaseUrl(),
+      },
+    },
+  });
 
   const modelExtensions: Record<string, any> = {};
   for (const model of Object.keys(jsonFields)) {

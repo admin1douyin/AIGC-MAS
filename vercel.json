@@ -4,7 +4,7 @@
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
   "functions": {
-    "api/[[...path]].ts": {
+    "api/**/*.ts": {
       "maxDuration": 60,
       "memory": 1024,
       "includeFiles": "packages/server/dist/**"

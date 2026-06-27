@@ -27,5 +27,36 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Sync environment variables to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          sync_env() {
+            local name="$1"
+            local value="$2"
+            if [ -z "$value" ]; then
+              echo "SKIP $name (empty)"
+              return 0
+            fi
+            if echo "$value" | grep -qE '\[PASSWORD\]|\[YOUR-|your-supabase-|placeholder'; then
+              echo "SKIP $name (placeholder value detected)"
+              return 0
+            fi
+            echo "Syncing $name..."
+            vercel env rm "$name" production --token="$VERCEL_TOKEN" --yes 2>/dev/null || true
+            printf '%s' "$value" | vercel env add "$name" production --token="$VERCEL_TOKEN"
+          }
+          sync_env "DATABASE_URL" "$DATABASE_URL"
+          sync_env "DIRECT_URL" "$DIRECT_URL"
+          sync_env "SUPABASE_URL" "$SUPABASE_URL"
+          sync_env "SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
+          sync_env "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_ROLE_KEY"
+          sync_env "NODE_ENV" "production"
+
       - name: Deploy to Vercel (production)
         run: vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}

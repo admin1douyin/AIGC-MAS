@@ -25,3 +25,6 @@ coverage
 *.swo
 
 .vercel
+
+# Prisma generated client (custom output path - generated during build)
+packages/server/src/generated

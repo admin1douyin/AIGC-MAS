@@ -5,39 +5,44 @@ on:
     branches: [master]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
-  build-deploy:
+  build-and-deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci --prefer-offline
-        env:
-          NODE_ENV: production
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Build client
-        run: npm run build:client
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
         env:
-          NODE_ENV: production
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Deploy to Vercel (Production)
-        run: |
-          npx vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod --force
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'

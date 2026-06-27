@@ -36,6 +36,55 @@ app.get('/api/health', (_req: Request, res: Response) => {
       status: 'ok',
       timestamp: new Date().toISOString(),
       version: '1.0.0',
+      runtime: 'vercel-serverless',
+    },
+  });
+});
+
+// Diagnostic endpoint - checks DB connection without hanging
+app.get('/api/debug/db', async (_req: Request, res: Response) => {
+  const dbUrlSet = !!process.env.DATABASE_URL;
+  const directUrlSet = !!process.env.DIRECT_URL;
+  const supabaseUrl = process.env.SUPABASE_URL || 'NOT SET';
+  const region = process.env.VERCEL_REGION || process.env.AWS_REGION || 'unknown';
+
+  // Mask the DB URL for safe display
+  let dbUrlMasked = 'NOT SET';
+  if (dbUrlSet) {
+    const url = process.env.DATABASE_URL!;
+    dbUrlMasked = url.replace(/:[^:@]+@/, ':***@');
+  }
+
+  // Try a quick DB query with 8s timeout
+  let dbStatus = 'unknown';
+  let dbError = '';
+  const startTime = Date.now();
+
+  try {
+    const queryPromise = prisma.$queryRaw`SELECT 1 as test`;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('DB query timeout after 8s')), 8000)
+    );
+    await Promise.race([queryPromise, timeoutPromise]);
+    dbStatus = 'connected';
+  } catch (error: any) {
+    dbStatus = 'error';
+    dbError = error?.message || String(error);
+  }
+
+  res.json({
+    success: true,
+    data: {
+      region,
+      database: {
+        urlSet: dbUrlSet,
+        directUrlSet,
+        urlMasked: dbUrlMasked,
+        status: dbStatus,
+        error: dbError || undefined,
+        queryTimeMs: Date.now() - startTime,
+      },
+      supabaseUrl,
     },
   });
 });

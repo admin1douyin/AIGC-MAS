@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Deploy to Vercel
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -56,10 +56,6 @@ jobs:
           sync_env "SUPABASE_URL" "$SUPABASE_URL"
           sync_env "SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
           sync_env "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_ROLE_KEY"
-          # NOTE: Do NOT set NODE_ENV=production here - Vercel sets it automatically
-          # at runtime. Setting it as a build-time env var causes Vercel to skip
-          # devDependencies (prisma, typescript, vite), breaking the build.
-          # Remove NODE_ENV if a previous run set it:
           vercel env rm NODE_ENV production --token="$VERCEL_TOKEN" --yes 2>/dev/null || true
 
       - name: Deploy to Vercel (production)

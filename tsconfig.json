@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@aigc-mas/shared/*": ["packages/shared/src/*"]
+    }
+  },
+  "include": ["api/**/*", "packages/server/src/**/*", "packages/shared/src/**/*"],
+  "exclude": ["node_modules", "dist", "packages/client", "packages/server/dist", "packages/shared/dist"]
+}

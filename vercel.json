@@ -3,6 +3,12 @@
   "buildCommand": "npm run vercel:build",
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
+  "functions": {
+    "api/[[...path]].ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]

@@ -20,7 +20,9 @@
     "db:push": "npm run db:push -w @aigc-mas/server",
     "db:seed": "npm run db:seed -w @aigc-mas/server",
     "setup": "npm install && npm run db:generate && npm run db:migrate && npm run db:seed",
-    "vercel:build": "npm run build:client"
+    "vercel:build": "npm run build -w @aigc-mas/shared && npm run vercel:migrate && npm run build -w @aigc-mas/server && npm run build -w @aigc-mas/client",
+    "vercel:migrate": "npx prisma migrate deploy --schema=packages/server/prisma/schema.prisma || echo migrate-skipped",
+    "postinstall": "prisma generate --schema=packages/server/prisma/schema.prisma || echo skip"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

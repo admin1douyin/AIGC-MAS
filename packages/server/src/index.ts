@@ -1,75 +1,12 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import { createServer } from 'http';
-import { validateEnv } from './lib/env-validator';
-import { prisma } from './lib/prisma';
-import { errorHandler } from './middleware/errorHandler';
-import { notFoundHandler } from './middleware/notFound';
-import projectRoutes from './routes/projects';
-import agentRoutes from './routes/agents';
-import taskRoutes from './routes/tasks';
-import scriptRoutes from './routes/scripts';
-import assetRoutes from './routes/assets';
-import shortDramaRoutes from './routes/shortDrama';
-import corporateRoutes from './routes/corporate';
-import tourismRoutes from './routes/tourism';
-import statsRoutes from './routes/stats';
-import authRoutes from './routes/auth';
-import paymentRoutes from './routes/payments';
-import commentRoutes from './routes/comments';
-import notificationRoutes from './routes/notifications';
-import episodeRoutes from './routes/episodes';
-import brandProfileRoutes from './routes/brandProfiles';
-import tourismResourceRoutes from './routes/tourismResources';
-import organizationRoutes from './routes/organizations';
-import { agentEngine } from './agents/AgentEngine';
+import app, { ensureInitialized } from './app';
 
-const app = express();
 const PORT = process.env.PORT || 3001;
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.get('/api/health', (_req, res) => {
-  res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
-});
-
-app.use('/api/projects', projectRoutes);
-app.use('/api/agents', agentRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/scripts', scriptRoutes);
-app.use('/api/assets', assetRoutes);
-app.use('/api/short-drama', shortDramaRoutes);
-app.use('/api/corporate', corporateRoutes);
-app.use('/api/tourism', tourismRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/episodes', episodeRoutes);
-app.use('/api/brand-profiles', brandProfileRoutes);
-app.use('/api/tourism-resources', tourismResourceRoutes);
-app.use('/api/organizations', organizationRoutes);
-
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-const server = createServer(app);
 
 async function bootstrap() {
   try {
-    // Validate environment variables before starting
-    validateEnv();
-    
-    await prisma.$connect();
-    console.log('[Database] Connected successfully');
-
-    await agentEngine.initialize();
-    console.log('[AgentEngine] Initialized successfully');
-
+    await ensureInitialized();
+    const server = createServer(app);
     server.listen(PORT, () => {
       console.log(`[Server] Running on http://localhost:${PORT}`);
     });
@@ -83,6 +20,7 @@ bootstrap();
 
 process.on('SIGINT', async () => {
   console.log('[Server] Shutting down...');
+  const { prisma } = await import('./lib/prisma');
   await prisma.$disconnect();
   process.exit(0);
 });

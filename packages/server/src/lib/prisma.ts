@@ -1,9 +1,5 @@
 import { PrismaClient } from '../generated/prisma';
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
-
-export const prisma = globalForPrisma.prisma || new PrismaClient();
-
 const jsonFields: Record<string, string[]> = {
   Project: ['brief', 'tags'],
   Agent: ['capabilities'],
@@ -66,25 +62,63 @@ function transformData(data: any, model: string): any {
   return transformed;
 }
 
-prisma.$use(async (params, next) => {
-  const model = params.model;
-  if (!model || !jsonFields[model]) return next(params);
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-  const action = params.action;
-  const dataActions = ['create', 'createMany', 'update', 'updateMany', 'upsert'];
+// Use Prisma client extension (the modern replacement for the removed $use middleware)
+function createPrismaClient(): PrismaClient {
+  const client = new PrismaClient();
 
-  if (dataActions.includes(action) && params.args?.data) {
-    params.args.data = transformData(params.args.data, model);
+  const modelExtensions: Record<string, any> = {};
+  for (const model of Object.keys(jsonFields)) {
+    modelExtensions[model] = {
+      async create({ args, query }: any) {
+        args.data = transformData(args.data, model);
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+      async createMany({ args, query }: any) {
+        if (Array.isArray(args.data)) {
+          args.data = args.data.map((d: any) => transformData(d, model));
+        } else {
+          args.data = transformData(args.data, model);
+        }
+        return query(args);
+      },
+      async update({ args, query }: any) {
+        args.data = transformData(args.data, model);
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+      async updateMany({ args, query }: any) {
+        args.data = transformData(args.data, model);
+        return query(args);
+      },
+      async upsert({ args, query }: any) {
+        args.create = transformData(args.create, model);
+        args.update = transformData(args.update, model);
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+      async findUnique({ args, query }: any) {
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+      async findFirst({ args, query }: any) {
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+      async findMany({ args, query }: any) {
+        const result = await query(args);
+        return transformResult(result, model);
+      },
+    };
   }
 
-  const result = await next(params);
+  return client.$extends({
+    query: modelExtensions as any,
+  }) as unknown as PrismaClient;
+}
 
-  const readActions = ['findUnique', 'findMany', 'findFirst', 'create', 'update', 'upsert'];
-  if (readActions.includes(action)) {
-    return transformResult(result, model);
-  }
-
-  return result;
-});
+export const prisma = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

@@ -96,7 +96,7 @@ export default function ProjectDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-400">加载中...</div>
+        <div className="text-text-tertiary">加载中...</div>
       </div>
     );
   }
@@ -104,10 +104,10 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500">项目不存在</p>
+        <p className="text-text-secondary">项目不存在</p>
         <button
           onClick={() => navigate('/app/projects')}
-          className="mt-4 text-blue-600 hover:text-blue-700"
+          className="mt-4 text-primary hover:text-primary-hover"
         >
           返回项目列表
         </button>
@@ -121,26 +121,26 @@ export default function ProjectDetail() {
       <div>
         <button
           onClick={() => navigate('/app/projects')}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-4"
+          className="flex items-center gap-2 text-text-secondary hover:text-text-primary mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           返回项目列表
         </button>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="card-surface p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
                 <Film className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-800">{project.name}</h1>
+                <h1 className="text-xl font-bold text-text-primary">{project.name}</h1>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${getTypeStyle(project.type)}`}>
-                    {getTypeLabel(project.type)}
+                  <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${getProjectTypeStyle(project.type)}`}>
+                    {getProjectTypeLabel(project.type)}
                   </span>
-                  <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${getStatusStyle(project.status)}`}>
-                    {getStatusLabel(project.status)}
+                  <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${getProjectStatusStyle(project.status)}`}>
+                    {getProjectStatusLabel(project.status)}
                   </span>
                   {polling && (
                     <span className="flex items-center gap-1 text-xs text-amber-600">
@@ -156,7 +156,7 @@ export default function ProjectDetail() {
               {project.status === 'draft' ? (
                 <button
                   onClick={handleStart}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-teal hover:bg-teal/80 text-white rounded-lg font-medium transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   启动项目
@@ -164,7 +164,7 @@ export default function ProjectDetail() {
               ) : project.status === 'in_production' ? (
                 <button
                   onClick={handlePause}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-warm hover:bg-warm/80 text-white rounded-lg font-medium transition-colors"
                 >
                   <Pause className="w-4 h-4" />
                   暂停
@@ -172,7 +172,7 @@ export default function ProjectDetail() {
               ) : project.status === 'paused' || project.status === 'planning' ? (
                 <button
                   onClick={handleResume}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   继续
@@ -184,53 +184,53 @@ export default function ProjectDetail() {
           {/* Progress */}
           <div className="mt-6">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-slate-600">项目进度</span>
-              <span className="font-medium text-slate-800">{project.progress}%</span>
+              <span className="text-text-secondary">项目进度</span>
+              <span className="font-medium text-text-primary">{project.progress}%</span>
             </div>
-            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-3 bg-bg-surface rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full transition-all duration-500"
                 style={{ width: `${project.progress}%` }}
               />
             </div>
           </div>
 
           {/* Info Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-9 h-9 rounded-lg bg-primary-bg flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <div className="text-xs text-slate-500">智能体</div>
-                <div className="font-medium text-slate-800">{project.agents?.length || 0} 个</div>
+                <div className="text-xs text-text-secondary">智能体</div>
+                <div className="font-medium text-text-primary">{project.agents?.length || 0} 个</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
-                <Layers className="w-5 h-5 text-amber-600" />
+              <div className="w-9 h-9 rounded-lg bg-warm/10 flex items-center justify-center">
+                <Layers className="w-5 h-5 text-warm" />
               </div>
               <div>
-                <div className="text-xs text-slate-500">任务数</div>
-                <div className="font-medium text-slate-800">{project.tasks?.length || 0} 个</div>
+                <div className="text-xs text-text-secondary">任务数</div>
+                <div className="font-medium text-text-primary">{project.tasks?.length || 0} 个</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-emerald-600" />
+              <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-teal" />
               </div>
               <div>
-                <div className="text-xs text-slate-500">脚本</div>
-                <div className="font-medium text-slate-800">{project.scripts?.length || 0} 版</div>
+                <div className="text-xs text-text-secondary">脚本</div>
+                <div className="font-medium text-text-primary">{project.scripts?.length || 0} 版</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-purple-600" />
+              <div className="w-9 h-9 rounded-lg bg-primary-bg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <div className="text-xs text-slate-500">创建时间</div>
-                <div className="font-medium text-slate-800 text-sm">
+                <div className="text-xs text-text-secondary">创建时间</div>
+                <div className="font-medium text-text-primary text-sm">
                   {new Date(project.createdAt).toLocaleDateString('zh-CN')}
                 </div>
               </div>
@@ -240,8 +240,8 @@ export default function ProjectDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-slate-200">
-        <div className="flex border-b border-slate-200 overflow-x-auto scrollbar-thin">
+      <div className="card-surface">
+        <div className="flex border-b border-border overflow-x-auto scrollbar-thin">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -251,8 +251,8 @@ export default function ProjectDetail() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   isActive
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-slate-500 border-transparent hover:text-slate-700'
+                    ? 'text-primary border-primary'
+                    : 'text-text-secondary border-transparent hover:text-text-primary'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -281,47 +281,47 @@ function OverviewTab({ project }: { project: Project }) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold text-slate-800 mb-3">项目描述</h3>
-        <p className="text-slate-600 text-sm">{project.description || '暂无描述'}</p>
+        <h3 className="font-semibold text-text-primary mb-3">项目描述</h3>
+        <p className="text-text-secondary text-sm">{project.description || '暂无描述'}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="font-semibold text-slate-800 mb-3">项目简报</h3>
+          <h3 className="font-semibold text-text-primary mb-3">项目简报</h3>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-2 border-b border-slate-50">
-              <span className="text-slate-500">视频标题</span>
-              <span className="text-slate-700">{brief.title || '-'}</span>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-text-secondary">视频标题</span>
+              <span className="text-text-primary">{brief.title || '-'}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-slate-50">
-              <span className="text-slate-500">目标受众</span>
-              <span className="text-slate-700">{brief.targetAudience || '-'}</span>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-text-secondary">目标受众</span>
+              <span className="text-text-primary">{brief.targetAudience || '-'}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-slate-50">
-              <span className="text-slate-500">视频时长</span>
-              <span className="text-slate-700">{brief.duration ? `${brief.duration} 秒` : '-'}</span>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-text-secondary">视频时长</span>
+              <span className="text-text-primary">{brief.duration ? `${brief.duration} 秒` : '-'}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-slate-50">
-              <span className="text-slate-500">风格</span>
-              <span className="text-slate-700">{brief.style || '-'}</span>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-text-secondary">风格</span>
+              <span className="text-text-primary">{brief.style || '-'}</span>
             </div>
           </div>
         </div>
 
         <div>
-          <h3 className="font-semibold text-slate-800 mb-3">标签</h3>
+          <h3 className="font-semibold text-text-primary mb-3">标签</h3>
           <div className="flex flex-wrap gap-2">
             {project.tags.length > 0 ? (
               project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs"
+                  className="px-2.5 py-1 bg-bg-surface text-text-secondary rounded-full text-xs"
                 >
                   {tag}
                 </span>
               ))
             ) : (
-              <span className="text-sm text-slate-400">暂无标签</span>
+              <span className="text-sm text-text-tertiary">暂无标签</span>
             )}
           </div>
         </div>
@@ -329,23 +329,23 @@ function OverviewTab({ project }: { project: Project }) {
 
       {project.shortDrama && (
         <div>
-          <h3 className="font-semibold text-slate-800 mb-3">短剧详情</h3>
+          <h3 className="font-semibold text-text-primary mb-3">短剧详情</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">题材</div>
-              <div className="font-medium text-slate-800 text-sm">{project.shortDrama.genre || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">题材</div>
+              <div className="font-medium text-text-primary text-sm">{project.shortDrama.genre || '-'}</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">集数</div>
-              <div className="font-medium text-slate-800 text-sm">{project.shortDrama.episodeCount || 1} 集</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">集数</div>
+              <div className="font-medium text-text-primary text-sm">{project.shortDrama.episodeCount || 1} 集</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">单集时长</div>
-              <div className="font-medium text-slate-800 text-sm">{project.shortDrama.episodeDuration || '-'} 秒</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">单集时长</div>
+              <div className="font-medium text-text-primary text-sm">{project.shortDrama.episodeDuration || '-'} 秒</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">发布平台</div>
-              <div className="font-medium text-slate-800 text-sm">{project.shortDrama.targetPlatform || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">发布平台</div>
+              <div className="font-medium text-text-primary text-sm">{project.shortDrama.targetPlatform || '-'}</div>
             </div>
           </div>
         </div>
@@ -353,19 +353,19 @@ function OverviewTab({ project }: { project: Project }) {
 
       {project.corporateVideo && (
         <div>
-          <h3 className="font-semibold text-slate-800 mb-3">企业视频详情</h3>
+          <h3 className="font-semibold text-text-primary mb-3">企业视频详情</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">企业名称</div>
-              <div className="font-medium text-slate-800 text-sm">{project.corporateVideo.companyName || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">企业名称</div>
+              <div className="font-medium text-text-primary text-sm">{project.corporateVideo.companyName || '-'}</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">行业</div>
-              <div className="font-medium text-slate-800 text-sm">{project.corporateVideo.industry || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">行业</div>
+              <div className="font-medium text-text-primary text-sm">{project.corporateVideo.industry || '-'}</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">视频类型</div>
-              <div className="font-medium text-slate-800 text-sm">{project.corporateVideo.videoType || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">视频类型</div>
+              <div className="font-medium text-text-primary text-sm">{project.corporateVideo.videoType || '-'}</div>
             </div>
           </div>
         </div>
@@ -373,19 +373,19 @@ function OverviewTab({ project }: { project: Project }) {
 
       {project.tourismPromo && (
         <div>
-          <h3 className="font-semibold text-slate-800 mb-3">文旅宣传详情</h3>
+          <h3 className="font-semibold text-text-primary mb-3">文旅宣传详情</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">目的地</div>
-              <div className="font-medium text-slate-800 text-sm">{project.tourismPromo.location || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">目的地</div>
+              <div className="font-medium text-text-primary text-sm">{project.tourismPromo.location || '-'}</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">建议季节</div>
-              <div className="font-medium text-slate-800 text-sm">{project.tourismPromo.season || '-'}</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">建议季节</div>
+              <div className="font-medium text-text-primary text-sm">{project.tourismPromo.season || '-'}</div>
             </div>
-            <div className="p-3 bg-slate-50 rounded-lg">
-              <div className="text-xs text-slate-500">建议行程</div>
-              <div className="font-medium text-slate-800 text-sm">{project.tourismPromo.durationDays || '-'} 天</div>
+            <div className="p-3 bg-bg-surface rounded-lg">
+              <div className="text-xs text-text-secondary">建议行程</div>
+              <div className="font-medium text-text-primary text-sm">{project.tourismPromo.durationDays || '-'} 天</div>
             </div>
           </div>
         </div>
@@ -401,15 +401,15 @@ function AgentsTab({ project }: { project: Project }) {
         project.agents.map((agent: any) => (
           <div
             key={agent.id}
-            className="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors"
+            className="flex items-center justify-between p-4 border border-border rounded-xl hover:border-border-hover transition-colors"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-medium text-slate-800">{agent.name}</div>
-                <div className="text-sm text-slate-500">{agent.description}</div>
+                <div className="font-medium text-text-primary">{agent.name}</div>
+                <div className="text-sm text-text-secondary">{agent.description}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -420,7 +420,7 @@ function AgentsTab({ project }: { project: Project }) {
           </div>
         ))
       ) : (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-12 text-text-tertiary">
           <Bot className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>暂无智能体，启动项目后将自动分配</p>
         </div>
@@ -436,25 +436,25 @@ function TasksTab({ project }: { project: Project }) {
         project.tasks.map((task: any, index: number) => (
           <div
             key={task.id}
-            className="flex items-start gap-4 p-4 border border-slate-200 rounded-xl"
+            className="flex items-start gap-4 p-4 border border-border rounded-xl"
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 ${
-              task.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :
-              task.status === 'in_progress' ? 'bg-blue-100 text-blue-600' :
-              'bg-slate-100 text-slate-500'
+              task.status === 'completed' ? 'bg-teal/10 text-state-success' :
+              task.status === 'in_progress' ? 'bg-primary-bg text-primary' :
+              'bg-bg-surface text-text-secondary'
             }`}>
               {task.status === 'completed' ? '✓' : index + 1}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-slate-800">{task.title}</h4>
+                <h4 className="font-medium text-text-primary">{task.title}</h4>
                 <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${getTaskStatusStyle(task.status)}`}>
                   {getTaskStatusLabel(task.status)}
                 </span>
               </div>
-              <p className="text-sm text-slate-500 mt-1">{task.description}</p>
+              <p className="text-sm text-text-secondary mt-1">{task.description}</p>
               {task.agentRole && (
-                <div className="mt-2 text-xs text-slate-400">
+                <div className="mt-2 text-xs text-text-tertiary">
                   负责智能体：{getAgentRoleLabel(task.agentRole)}
                 </div>
               )}
@@ -462,7 +462,7 @@ function TasksTab({ project }: { project: Project }) {
           </div>
         ))
       ) : (
-        <div className="text-center py-12 text-slate-400">
+        <div className="text-center py-12 text-text-tertiary">
           <Layers className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>暂无任务，启动项目后将自动生成任务流</p>
         </div>
@@ -477,7 +477,7 @@ function ScriptTab({ project }: { project: Project }) {
 
   if (scripts.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400">
+      <div className="text-center py-12 text-text-tertiary">
         <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
         <p>暂无脚本</p>
       </div>
@@ -490,8 +490,8 @@ function ScriptTab({ project }: { project: Project }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-slate-800">{latestScript?.title}</h3>
-          <p className="text-sm text-slate-500 mt-1">
+          <h3 className="font-semibold text-text-primary">{latestScript?.title}</h3>
+          <p className="text-sm text-text-secondary mt-1">
             共 {scenes.length} 个场景 · 总时长 {latestScript?.totalDuration} 秒 · v{latestScript?.version}
           </p>
         </div>
@@ -501,33 +501,33 @@ function ScriptTab({ project }: { project: Project }) {
         {scenes.map((scene: any) => (
           <div
             key={scene.id}
-            className="p-4 border border-slate-200 rounded-xl"
+            className="p-4 border border-border rounded-xl"
           >
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="font-medium text-slate-800">
+                <h4 className="font-medium text-text-primary">
                   场景 {scene.sceneNumber}：{scene.title}
                 </h4>
-                <p className="text-sm text-slate-500 mt-1">{scene.description}</p>
+                <p className="text-sm text-text-secondary mt-1">{scene.description}</p>
               </div>
-              <span className="text-xs text-slate-400 flex-shrink-0">{scene.duration}s</span>
+              <span className="text-xs text-text-tertiary flex-shrink-0">{scene.duration}s</span>
             </div>
 
             {scene.voiceover && (
-              <div className="p-3 bg-blue-50/50 rounded-lg mt-3">
-                <div className="text-xs text-blue-600 font-medium mb-1">旁白</div>
-                <p className="text-sm text-slate-700">{scene.voiceover}</p>
+              <div className="p-3 bg-primary-bg rounded-lg mt-3">
+                <div className="text-xs text-primary font-medium mb-1">旁白</div>
+                <p className="text-sm text-text-primary">{scene.voiceover}</p>
               </div>
             )}
 
             {scene.dialogue && (
-              <div className="p-3 bg-purple-50/50 rounded-lg mt-3">
+              <div className="p-3 bg-purple-50 rounded-lg mt-3">
                 <div className="text-xs text-purple-600 font-medium mb-1">对话</div>
-                <p className="text-sm text-slate-700 whitespace-pre-line">{scene.dialogue}</p>
+                <p className="text-sm text-text-primary whitespace-pre-line">{scene.dialogue}</p>
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
+            <div className="flex flex-wrap gap-4 mt-3 text-xs text-text-secondary">
               {scene.location && <span>📍 {scene.location}</span>}
               {scene.cameraAngle && <span>🎬 {scene.cameraAngle}</span>}
               {scene.bgm && <span>🎵 {scene.bgm}</span>}
@@ -544,7 +544,7 @@ function AssetsTab({ project }: { project: Project }) {
 
   if (assets.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400">
+      <div className="text-center py-12 text-text-tertiary">
         <Film className="w-12 h-12 mx-auto mb-2 opacity-50" />
         <p>暂无素材</p>
       </div>
@@ -556,13 +556,13 @@ function AssetsTab({ project }: { project: Project }) {
       {assets.map((asset: any) => (
         <div
           key={asset.id}
-          className="aspect-video bg-slate-100 rounded-xl flex flex-col items-center justify-center p-4 border border-slate-200"
+          className="aspect-video bg-bg-surface rounded-xl flex flex-col items-center justify-center p-4 border border-border"
         >
-          <Film className="w-8 h-8 text-slate-400 mb-2" />
-          <div className="text-sm font-medium text-slate-700 text-center truncate w-full">
+          <Film className="w-8 h-8 text-text-tertiary mb-2" />
+          <div className="text-sm font-medium text-text-primary text-center truncate w-full">
             {asset.name}
           </div>
-          <div className="text-xs text-slate-400 mt-1">{asset.type}</div>
+          <div className="text-xs text-text-tertiary mt-1">{asset.type}</div>
         </div>
       ))}
     </div>
@@ -585,7 +585,7 @@ function MessagesTab({ project }: { project: Project }) {
 
   if (messages.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400">
+      <div className="text-center py-12 text-text-tertiary">
         <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
         <p>暂无消息</p>
       </div>
@@ -596,14 +596,14 @@ function MessagesTab({ project }: { project: Project }) {
     <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin pr-2">
       {messages.map((msg: any) => (
         <div key={msg.id} className="flex gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center flex-shrink-0">
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1">
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-sm text-slate-700">{msg.content}</p>
+            <div className="bg-bg-surface rounded-lg p-3">
+              <p className="text-sm text-text-primary">{msg.content}</p>
             </div>
-            <div className="text-xs text-slate-400 mt-1">
+            <div className="text-xs text-text-tertiary mt-1">
               {new Date(msg.createdAt).toLocaleTimeString('zh-CN')}
             </div>
           </div>
@@ -613,7 +613,7 @@ function MessagesTab({ project }: { project: Project }) {
   );
 }
 
-function getTypeLabel(type: string) {
+function getProjectTypeLabel(type: string) {
   const map: Record<string, string> = {
     short_drama: '短剧生产',
     corporate_video: '企业视频',
@@ -622,16 +622,16 @@ function getTypeLabel(type: string) {
   return map[type] || type;
 }
 
-function getTypeStyle(type: string) {
+function getProjectTypeStyle(type: string) {
   const map: Record<string, string> = {
-    short_drama: 'bg-blue-100 text-blue-700',
-    corporate_video: 'bg-emerald-100 text-emerald-700',
-    tourism_promo: 'bg-amber-100 text-amber-700',
+    short_drama: 'bg-primary-bg text-primary',
+    corporate_video: 'bg-teal/10 text-state-success',
+    tourism_promo: 'bg-warm/10 text-warm',
   };
-  return map[type] || 'bg-slate-100 text-slate-700';
+  return map[type] || 'bg-bg-surface text-text-secondary';
 }
 
-function getStatusLabel(status: string) {
+function getProjectStatusLabel(status: string) {
   const map: Record<string, string> = {
     draft: '草稿',
     planning: '规划中',
@@ -647,20 +647,20 @@ function getStatusLabel(status: string) {
   return map[status] || status;
 }
 
-function getStatusStyle(status: string) {
+function getProjectStatusStyle(status: string) {
   const map: Record<string, string> = {
-    draft: 'bg-slate-100 text-slate-700',
-    planning: 'bg-blue-100 text-blue-700',
-    in_production: 'bg-amber-100 text-amber-700',
-    in_review: 'bg-purple-100 text-purple-700',
-    review: 'bg-purple-100 text-purple-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    cancelled: 'bg-red-100 text-red-700',
-    paused: 'bg-orange-100 text-orange-700',
-    failed: 'bg-red-100 text-red-700',
-    archived: 'bg-slate-100 text-slate-500',
+    draft: 'bg-bg-surface text-text-secondary',
+    planning: 'bg-primary-bg text-primary',
+    in_production: 'bg-amber-50 text-amber-600',
+    in_review: 'bg-purple-50 text-purple-600',
+    review: 'bg-purple-50 text-purple-600',
+    completed: 'bg-teal/10 text-state-success',
+    cancelled: 'bg-red-50 text-state-error',
+    paused: 'bg-warm/10 text-warm',
+    failed: 'bg-red-50 text-state-error',
+    archived: 'bg-bg-surface text-text-tertiary',
   };
-  return map[status] || 'bg-slate-100 text-slate-700';
+  return map[status] || 'bg-bg-surface text-text-secondary';
 }
 
 function getAgentStatusLabel(status: string) {
@@ -675,12 +675,12 @@ function getAgentStatusLabel(status: string) {
 
 function getAgentStatusStyle(status: string) {
   const map: Record<string, string> = {
-    idle: 'bg-slate-100 text-slate-600',
-    working: 'bg-blue-100 text-blue-600',
-    paused: 'bg-amber-100 text-amber-600',
-    error: 'bg-red-100 text-red-600',
+    idle: 'bg-bg-surface text-text-secondary',
+    working: 'bg-primary-bg text-primary',
+    paused: 'bg-warm/10 text-warm',
+    error: 'bg-red-50 text-state-error',
   };
-  return map[status] || 'bg-slate-100 text-slate-600';
+  return map[status] || 'bg-bg-surface text-text-secondary';
 }
 
 function getTaskStatusLabel(status: string) {
@@ -698,15 +698,15 @@ function getTaskStatusLabel(status: string) {
 
 function getTaskStatusStyle(status: string) {
   const map: Record<string, string> = {
-    pending: 'bg-slate-100 text-slate-600',
-    in_progress: 'bg-blue-100 text-blue-600',
-    in_review: 'bg-purple-100 text-purple-600',
-    needs_revision: 'bg-orange-100 text-orange-600',
-    completed: 'bg-emerald-100 text-emerald-600',
-    failed: 'bg-red-100 text-red-600',
-    cancelled: 'bg-slate-100 text-slate-500',
+    pending: 'bg-bg-surface text-text-secondary',
+    in_progress: 'bg-primary-bg text-primary',
+    in_review: 'bg-purple-50 text-purple-600',
+    needs_revision: 'bg-warm/10 text-warm',
+    completed: 'bg-teal/10 text-state-success',
+    failed: 'bg-red-50 text-state-error',
+    cancelled: 'bg-bg-surface text-text-tertiary',
   };
-  return map[status] || 'bg-slate-100 text-slate-600';
+  return map[status] || 'bg-bg-surface text-text-secondary';
 }
 
 function getAgentRoleLabel(role: string) {

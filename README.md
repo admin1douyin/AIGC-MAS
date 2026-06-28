@@ -16,7 +16,7 @@ AIGC-MAS (AIGC Multi-Agent Service Platform) 是一个基于多智能体协同�
 
 - **前端**: React 18 + TypeScript + Vite + Tailwind CSS + React Router
 - **后端**: Node.js + Express + TypeScript
-- **数据库**: SQLite + Prisma ORM
+- **数据库**: PostgreSQL (Supabase) + Prisma ORM
 - **架构**: Monorepo (npm workspaces)
 
 ### 项目结构

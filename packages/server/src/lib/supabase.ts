@@ -16,18 +16,39 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let _client: SupabaseClient | null = null;
 
+function isValidJwtToken(key: string): boolean {
+  const parts = key.split('.');
+  return parts.length === 3 && 
+         parts[0].length > 0 && 
+         parts[1].length > 0 && 
+         parts[2].length > 0;
+}
+
 function getClient(): SupabaseClient {
   if (_client) return _client;
 
   const supabaseUrl = process.env.SUPABASE_URL || '';
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-  if (!supabaseUrl || !supabaseServiceKey) {
+  if (!supabaseUrl) {
     throw new Error(
-      `Supabase client not initialized: ` +
-      `SUPABASE_URL is ${supabaseUrl ? 'set' : 'MISSING'}, ` +
-      `SUPABASE_SERVICE_ROLE_KEY is ${supabaseServiceKey ? 'set' : 'MISSING'}. ` +
-      `Configure these environment variables in Vercel project settings.`
+      `Supabase client not initialized: SUPABASE_URL is MISSING. ` +
+      `Configure this environment variable in Vercel project settings.`
+    );
+  }
+
+  if (!supabaseServiceKey) {
+    throw new Error(
+      `Supabase client not initialized: SUPABASE_SERVICE_ROLE_KEY is MISSING. ` +
+      `Configure this environment variable in Vercel project settings.`
+    );
+  }
+
+  if (!isValidJwtToken(supabaseServiceKey)) {
+    throw new Error(
+      `Supabase client not initialized: SUPABASE_SERVICE_ROLE_KEY is not a valid JWT token. ` +
+      `Valid JWT format: header.payload.signature (3 Base64-encoded parts separated by dots). ` +
+      `Obtain the correct key from Supabase Dashboard > Project Settings > API.`
     );
   }
 

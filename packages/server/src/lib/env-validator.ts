@@ -37,8 +37,8 @@ const ENV_CONFIG: EnvConfig = {
     DATABASE_URL: /^postgresql:\/\/.+/,
     DIRECT_URL: /^postgresql:\/\/.+/,
     SUPABASE_URL: /^https:\/\/[a-z0-9-]+\.supabase\.co$/,
-    SUPABASE_SERVICE_ROLE_KEY: /^eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/,
-    SUPABASE_ANON_KEY: /^eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/,
+    SUPABASE_SERVICE_ROLE_KEY: /^(eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+|sb_secret_)/,
+    SUPABASE_ANON_KEY: /^(eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+|sb_publishable_)/,
   },
 };
 

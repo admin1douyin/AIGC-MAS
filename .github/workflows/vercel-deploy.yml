@@ -57,6 +57,9 @@ jobs:
           sync_env "SUPABASE_URL" "$SUPABASE_URL"
           sync_env "SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
           sync_env "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_ROLE_KEY"
+          # Frontend requires VITE_ prefix
+          sync_env "VITE_SUPABASE_URL" "$SUPABASE_URL"
+          sync_env "VITE_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
           vercel env rm NODE_ENV production --token="$VERCEL_TOKEN" --yes 2>/dev/null || true
 
       - name: Deploy to Vercel (production)

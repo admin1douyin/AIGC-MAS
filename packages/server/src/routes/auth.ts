@@ -77,6 +77,43 @@ router.get('/profile', async (req: Request, res: Response) => {
   }
 });
 
+// Create profile (called during signup)
+router.post('/profile', async (req: Request, res: Response) => {
+  try {
+    const { userId, email, name } = req.body;
+    
+    if (!userId || !email) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'userId and email are required' }
+      });
+    }
+
+    let profile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          userId,
+          email,
+          name: name || email.split('@')[0] || '用户',
+          role: 'creator',
+        },
+      });
+    }
+
+    res.json({ success: true, data: profile });
+  } catch (error: any) {
+    console.error('Create profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
+});
+
 // Update profile
 router.put('/profile', validate(updateProfileSchema), async (req: Request, res: Response) => {
   try {

@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     
     const memberships = await prisma.orgMember.findMany({
       where: { profileId },
@@ -33,7 +33,7 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
 
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     const { name, slug, description } = req.body;
 
     if (!name || !slug) {
@@ -83,7 +83,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
 
 router.get('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     const { id } = req.params;
 
     const membership = await prisma.orgMember.findUnique({
@@ -139,7 +139,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
 
 router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     const { id } = req.params;
     const { name, description, logoUrl } = req.body;
 
@@ -180,7 +180,7 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
 
 router.post('/:id/members', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     const { id } = req.params;
     const { email, role } = req.body;
 
@@ -257,7 +257,7 @@ router.post('/:id/members', requireAuth, async (req: Request, res: Response) => 
 
 router.delete('/:id/members/:memberId', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profileId = (req as any).profileId;
+    const profileId = req.profile!.id;
     const { id, memberId } = req.params;
 
     const membership = await prisma.orgMember.findUnique({

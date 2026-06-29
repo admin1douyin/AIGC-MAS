@@ -15,6 +15,7 @@ import Subscription from './pages/Subscription';
 import Assets from './pages/Assets';
 import Notifications from './pages/Notifications';
 import ScriptEditor from './pages/ScriptEditor';
+import ChatAgent from './pages/ChatAgent';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { AuthProvider } from './lib/AuthContext';
@@ -36,6 +37,8 @@ function App() {
           <Route path="projects/:id/script" element={<ScriptEditor />} />
           <Route path="agents" element={<Agents />} />
           <Route path="agent-market" element={<AgentMarket />} />
+          <Route path="chat" element={<ChatAgent />} />
+          <Route path="chat/:projectId" element={<ChatAgent />} />
           <Route path="assets" element={<Assets />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />

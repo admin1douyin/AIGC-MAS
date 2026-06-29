@@ -13,11 +13,13 @@ import {
   FolderOpen,
   Bell,
   Store,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 const navItems = [
   { path: '/app', label: '总览', icon: LayoutDashboard },
+  { path: '/app/chat', label: 'AI助手', icon: MessageSquare },
   { path: '/app/projects', label: '项目管理', icon: Film },
   { path: '/app/assets', label: '素材管理', icon: FolderOpen },
   { path: '/app/agent-market', label: '智能体市场', icon: Store },
@@ -195,6 +197,7 @@ export default function Layout() {
 
 function getPageTitle(path: string): string {
   if (path === '/app') return '总览看板';
+  if (path.startsWith('/app/chat')) return 'AI助手';
   if (path.startsWith('/app/projects/new')) return '新建项目';
   if (path.startsWith('/app/projects/') && path.includes('/script')) return '脚本编辑器';
   if (path.startsWith('/app/projects/')) return '项目详情';

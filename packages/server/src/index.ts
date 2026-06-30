@@ -1,10 +1,14 @@
 import { createServer } from 'http';
 import app, { ensureInitialized } from './app';
+import { validateEnv } from './lib/env-validator';
 
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
   try {
+    // Validate environment variables before starting (required for production)
+    validateEnv();
+    
     await ensureInitialized();
     const server = createServer(app);
     server.listen(PORT, () => {

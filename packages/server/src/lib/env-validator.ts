@@ -37,8 +37,9 @@ const ENV_CONFIG: EnvConfig = {
     DATABASE_URL: /^postgresql:\/\/.+/,
     DIRECT_URL: /^postgresql:\/\/.+/,
     SUPABASE_URL: /^https:\/\/[a-z0-9-]+\.supabase\.co$/,
-    SUPABASE_SERVICE_ROLE_KEY: /^(eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+|sb_secret_)/,
-    SUPABASE_ANON_KEY: /^(eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+|sb_publishable_)/,
+    // JWT format: header.payload.signature (3 parts)
+    SUPABASE_SERVICE_ROLE_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,})$/,
+    SUPABASE_ANON_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,})$/,
   },
 };
 
@@ -56,7 +57,7 @@ export function validateEnv(): void {
     const value = process.env[varName];
 
     // Check if missing
-    if (!value || value === '' || value.includes('[YOUR-PASSWORD]') || value.includes('[REQUIRE-')) {
+    if (!value || value === '' || value.includes('[YOUR-PASSWORD]') || value.includes('[REQUIRE-') || value.includes('[YOUR-')) {
       missingVars.push(varName);
       continue;
     }
@@ -66,6 +67,20 @@ export function validateEnv(): void {
       const pattern = ENV_CONFIG.patterns[varName];
       if (!pattern.test(value)) {
         invalidVars.push(`${varName} (invalid format)`);
+      }
+    }
+
+    // Additional JWT validation
+    if (varName === 'SUPABASE_ANON_KEY' || varName === 'SUPABASE_SERVICE_ROLE_KEY') {
+      const parts = value.split('.');
+      if (parts.length !== 3) {
+        // Find the var in invalidVars and update it
+        const idx = invalidVars.findIndex(v => v.startsWith(varName));
+        if (idx >= 0) {
+          invalidVars[idx] = `${varName} (JWT must have 3 parts, got ${parts.length})`;
+        } else {
+          invalidVars.push(`${varName} (JWT must have 3 parts, got ${parts.length})`);
+        }
       }
     }
   }

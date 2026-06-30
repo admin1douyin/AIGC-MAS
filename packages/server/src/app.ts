@@ -155,7 +155,7 @@ app.use('/api/tourism-resources', tourismResourceRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/video-generation', videoGenerationRoutes);
 app.use('/api/templates', templateRoutes);
-app.use('/api/agents', agentChatRoutes);
+app.use('/api/agent-chat', agentChatRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

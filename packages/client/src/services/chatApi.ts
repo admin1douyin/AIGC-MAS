@@ -15,14 +15,14 @@ export const chatApi = {
     agentRole?: string;
     context?: any;
   }): Promise<{ success: boolean; data: ChatMessage }> =>
-    api.post('/agents/chat', data),
+    api.post('/agent-chat/chat', data),
 
   getHistory: (projectId: string): Promise<{ success: boolean; data: ChatMessage[] }> =>
-    api.get(`/agents/chat/history`, { params: { projectId } }),
+    api.get(`/agent-chat/chat/history`, { params: { projectId } }),
 
   clearHistory: (projectId: string): Promise<{ success: boolean }> =>
-    api.delete(`/agents/chat/history`, { params: { projectId } }),
+    api.delete(`/agent-chat/chat/history`, { params: { projectId } }),
 
   quickActions: (projectId?: string): Promise<{ success: boolean; data: any[] }> =>
-    api.get('/agents/chat/quick-actions', { params: { projectId } }),
+    api.get('/agent-chat/quick-actions', { params: { projectId } }),
 };

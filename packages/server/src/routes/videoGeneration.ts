@@ -18,6 +18,7 @@ const generateVideoSchema = z.object({
   resolution: z.enum(['720p', '1080p', '4k']).optional(),
   style: z.string().optional(),
   referenceImages: z.array(z.string().url()).optional(),
+  assetIds: z.array(z.string()).optional(),
   seed: z.number().int().optional(),
   negativePrompt: z.string().optional(),
   cameraMotion: z.enum(['static', 'pan_left', 'pan_right', 'tilt_up', 'tilt_down', 'zoom_in', 'zoom_out', 'orbit']).optional(),
@@ -37,9 +38,27 @@ const batchGenerateSchema = z.object({
 
 router.post('/generate', requireAuth, validate(generateVideoSchema), async (req: Request, res: Response) => {
   try {
-    const { projectId, scriptId, sceneId, ...params } = req.body;
+    const { projectId, scriptId, sceneId, assetIds, ...params } = req.body;
 
-    const result = await seedanceService.generateVideo(params);
+    let referenceImages = params.referenceImages || [];
+
+    if (assetIds && assetIds.length > 0) {
+      const assets = await prisma.videoAsset.findMany({
+        where: { id: { in: assetIds } },
+        select: { url: true, type: true },
+      });
+
+      const imageUrls = assets
+        .filter(a => a.type === 'image' && a.url)
+        .map(a => a.url);
+
+      referenceImages = [...referenceImages, ...imageUrls];
+    }
+
+    const result = await seedanceService.generateVideo({
+      ...params,
+      referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
+    });
 
     if (projectId) {
       await prisma.videoAsset.create({
@@ -56,6 +75,7 @@ router.post('/generate', requireAuth, validate(generateVideoSchema), async (req:
             prompt: params.prompt,
             sceneId,
             scriptId,
+            assetIds,
             params,
           }),
           createdBy: req.profile!.id,
@@ -103,17 +123,50 @@ router.get('/task/:taskId', requireAuth, async (req: Request, res: Response) => 
     const status = await seedanceService.getTaskStatus(taskId);
 
     if (status.status === 'completed' && status.videoUrl) {
-      const assets = await prisma.videoAsset.findFirst({
+      const asset = await prisma.videoAsset.findFirst({
         where: {
           metadata: { contains: taskId },
         },
       });
 
-      if (assets && !assets.url) {
-        await prisma.videoAsset.update({
-          where: { id: assets.id },
-          data: { url: status.videoUrl, duration: status.duration },
+      if (asset) {
+        if (!asset.url) {
+          await prisma.videoAsset.update({
+            where: { id: asset.id },
+            data: { url: status.videoUrl, duration: status.duration },
+          });
+        }
+
+        const existingFinalVideo = await prisma.finalVideo.findFirst({
+          where: { projectId: asset.projectId, url: status.videoUrl },
         });
+
+        if (!existingFinalVideo) {
+          const project = await prisma.project.findUnique({
+            where: { id: asset.projectId },
+          });
+
+          let thumbnailUrl = '';
+          if (status.thumbnailUrl) {
+            thumbnailUrl = status.thumbnailUrl;
+          }
+
+          await prisma.finalVideo.create({
+            data: {
+              projectId: asset.projectId,
+              title: project?.name ? `${project.name} - 成片` : '成片',
+              description: 'AI生成视频成品',
+              url: status.videoUrl,
+              thumbnailUrl,
+              duration: status.duration || 0,
+              resolution: '1080p',
+              format: 'mp4',
+              size: 0,
+              version: 1,
+              isFinal: true,
+            },
+          });
+        }
       }
     }
 

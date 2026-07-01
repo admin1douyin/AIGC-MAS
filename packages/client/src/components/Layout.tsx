@@ -23,6 +23,7 @@ const navItems = [
   { path: '/app/chat', label: 'AI助手', icon: MessageSquare },
   { path: '/app/projects', label: '项目管理', icon: Film },
   { path: '/app/assets', label: '素材管理', icon: FolderOpen },
+  { path: '/app/ai-actors', label: 'AI演员', icon: User },
   { path: '/app/agent-market', label: '智能体市场', icon: Store },
   { path: '/app/agents', label: '我的智能体', icon: Bot },
   { path: '/app/notifications', label: '通知', icon: Bell },

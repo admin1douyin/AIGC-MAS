@@ -11,6 +11,7 @@ import {
   Key,
   Globe,
   Shield,
+  Plus,
 } from 'lucide-react';
 import { adminApi } from '../services/adminApi';
 import { useAuth } from '../lib/AuthContext';
@@ -358,18 +359,3 @@ export default function AdminSettings() {
   );
 }
 
-function Plus({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}

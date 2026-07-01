@@ -32,6 +32,13 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Standalone full-screen pages with own layout */}
+        <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/app/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+        <Route path="/app/ai-actors" element={<ProtectedRoute><AIActors /></ProtectedRoute>} />
+        <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
+
+        {/* Layout-wrapped pages */}
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="projects" element={<Projects />} />
           <Route path="projects/new" element={<NewProject />} />
@@ -46,10 +53,6 @@ function App() {
           <Route path="subscription" element={<Subscription />} />
           <Route path="admin/settings" element={<AdminSettings />} />
         </Route>
-        <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/app/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-        <Route path="/app/ai-actors" element={<ProtectedRoute><AIActors /></ProtectedRoute>} />
-        <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );

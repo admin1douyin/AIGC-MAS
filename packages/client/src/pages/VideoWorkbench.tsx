@@ -162,13 +162,11 @@ export default function VideoWorkbench() {
         )
       );
     } else if (isPanning) {
-      setPan({
-        x: dragStart.x - e.clientX + pan.x * 0 + e.clientX * 0,
-        y: dragStart.y - e.clientY + pan.y * 0 + e.clientY * 0,
-      });
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
       setPan((prev) => ({
-        x: prev.x + (dragStart.x - e.clientX) * -1 + 0,
-        y: prev.y + (dragStart.y - e.clientY) * -1 + 0,
+        x: prev.x + dx,
+        y: prev.y + dy,
       }));
       setDragStart({ x: e.clientX, y: e.clientY });
     }

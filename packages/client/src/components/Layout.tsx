@@ -244,5 +244,6 @@ function getPageTitle(path: string): string {
   if (path.startsWith('/app/profile')) return '个人中心';
   if (path.startsWith('/app/subscription')) return '订阅管理';
   if (path.startsWith('/app/admin/settings')) return '系统设置';
+  if (path.startsWith('/app/ai-actors')) return 'AI演员';
   return '';
 }

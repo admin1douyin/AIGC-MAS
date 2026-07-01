@@ -136,7 +136,7 @@ export default function Dashboard() {
         <div className="h-14 flex items-center px-4 border-b border-white/10">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
-              <Sparkles className="w-4.5 h-4.5 text-white" />
+              <Sparkles className="w-[18px] h-[18px] text-white" />
             </div>
             <span className="text-white font-bold text-base">麦预演</span>
           </div>

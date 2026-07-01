@@ -2,22 +2,22 @@ import api from './api';
 
 export const adminApi = {
   getConfig: async (category: string) => {
-    const res: any = await api.get(`/admin/config/${category}`);
-    return res.data;
+    return api.get(`/admin/config/${category}`);
   },
 
   updateConfig: async (category: string, config: Record<string, string>) => {
-    const res: any = await api.put(`/admin/config/${category}`, config);
-    return res.data;
+    return api.put(`/admin/config/${category}`, config);
   },
 
   getSeedanceStatus: async () => {
-    const res: any = await api.get('/admin/status/seedance');
-    return res.data;
+    return api.get('/admin/status/seedance');
   },
 
   getPaymentStatus: async () => {
-    const res: any = await api.get('/admin/status/payment');
-    return res.data;
+    return api.get('/admin/status/payment');
+  },
+
+  initConfigs: async () => {
+    return api.post('/admin/init-configs');
   },
 };

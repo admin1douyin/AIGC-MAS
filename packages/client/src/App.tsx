@@ -33,7 +33,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/new" element={<NewProject />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
@@ -42,13 +41,14 @@ function App() {
           <Route path="agent-market" element={<AgentMarket />} />
           <Route path="chat" element={<ChatAgent />} />
           <Route path="chat/:projectId" element={<ChatAgent />} />
-          <Route path="assets" element={<Assets />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
           <Route path="subscription" element={<Subscription />} />
           <Route path="admin/settings" element={<AdminSettings />} />
-          <Route path="ai-actors" element={<AIActors />} />
         </Route>
+        <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/app/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+        <Route path="/app/ai-actors" element={<ProtectedRoute><AIActors /></ProtectedRoute>} />
         <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>

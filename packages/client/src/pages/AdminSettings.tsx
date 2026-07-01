@@ -74,7 +74,7 @@ export default function AdminSettings() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      let result;
+      let result: any;
       if (activeTab === 'seedance') {
         result = await adminApi.getSeedanceStatus();
       } else {

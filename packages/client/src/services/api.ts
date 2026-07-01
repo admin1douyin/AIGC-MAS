@@ -20,9 +20,9 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
-      supabase.auth.signOut();
+    // Handle 401 Unauthorized - redirect to login but don't force signOut
+    // (the session may still be valid, just the token wasn't sent in time)
+    if (error.response?.status === 401 && !window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
     }
     console.error('API Error:', error);

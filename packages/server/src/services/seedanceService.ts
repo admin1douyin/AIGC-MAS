@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { prisma } from '../lib/prisma';
 
 export interface SeedanceConfig {
   apiKey: string;
@@ -91,7 +91,7 @@ class SeedanceService {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: '生成失败' }));
+        const error: any = await response.json().catch(() => ({ message: '生成失败' }));
         return {
           taskId: 'error',
           status: 'failed',
@@ -99,7 +99,7 @@ class SeedanceService {
         };
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       return {
         taskId: data.task_id || data.id,
         status: 'processing',
@@ -139,7 +139,7 @@ class SeedanceService {
         };
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       return {
         taskId: data.task_id || taskId,
         status: data.status || 'processing',
@@ -182,11 +182,11 @@ class SeedanceService {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: '生成分镜失败' }));
+        const error: any = await response.json().catch(() => ({ message: '生成分镜失败' }));
         return { taskId: 'error', status: 'failed', error: error.message };
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       return {
         taskId: data.task_id || data.id,
         status: 'completed',

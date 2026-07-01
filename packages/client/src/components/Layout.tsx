@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -14,6 +14,7 @@ import {
   Bell,
   Store,
   MessageSquare,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
@@ -30,9 +31,29 @@ const navItems = [
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string>('viewer');
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, getProfile } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      loadUserProfile();
+    }
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    try {
+      const result = await getProfile();
+      if (result?.success && result?.data?.role) {
+        setUserRole(result.data.role);
+      }
+    } catch (e) {
+      console.error('Load user profile error:', e);
+    }
+  };
+
+  const isAdmin = userRole === 'super_admin' || userRole === 'admin';
 
   const handleSignOut = async () => {
     await signOut();
@@ -170,6 +191,20 @@ export default function Layout() {
                         订阅管理
                       </button>
                     </div>
+                    {isAdmin && (
+                      <div className="border-t border-border pt-1">
+                        <button
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            navigate('/app/admin/settings');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-bg-surface-hover transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          系统设置
+                        </button>
+                      </div>
+                    )}
                     <div className="border-t border-border pt-1">
                       <button
                         onClick={handleSignOut}
@@ -208,5 +243,6 @@ function getPageTitle(path: string): string {
   if (path.startsWith('/app/notifications')) return '通知中心';
   if (path.startsWith('/app/profile')) return '个人中心';
   if (path.startsWith('/app/subscription')) return '订阅管理';
+  if (path.startsWith('/app/admin/settings')) return '系统设置';
   return '';
 }

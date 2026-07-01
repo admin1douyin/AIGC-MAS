@@ -1,283 +1,399 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Film,
-  Image,
-  Music,
-  FileText,
+  Home,
+  FolderOpen,
+  User,
+  Plus,
+  MoreHorizontal,
+  Sparkles,
   Search,
   Upload,
   Download,
-  Trash2,
-  FolderOpen,
-  Filter,
+  CheckSquare,
+  Gift,
+  Video,
+  Bell,
+  Settings,
 } from 'lucide-react';
+
+const navItems = [
+  { key: 'home', label: '首页', icon: Home },
+  { key: 'assets', label: '资产库', icon: FolderOpen },
+  { key: 'ai_actors', label: 'AI演员', icon: User },
+];
+
+const assetTabs = [
+  { key: 'projects', label: '我的项目' },
+  { key: 'scripts', label: '我的剧本' },
+];
+
+const categories = [
+  { key: 'all', label: '全部' },
+  { key: 'character', label: '人物' },
+  { key: 'scene', label: '场景' },
+  { key: 'prop', label: '道具' },
+];
+
+const mockProjects = [
+  { id: '1', name: '001' },
+  { id: '2', name: '002' },
+  { id: '3', name: '003' },
+  { id: '4', name: '测试1' },
+  { id: '5', name: '测试2' },
+  { id: '6', name: '测试3' },
+  { id: '7', name: '测试4' },
+  { id: '8', name: '测试5' },
+  { id: '9', name: '测试6' },
+  { id: '10', name: '测试7' },
+  { id: '11', name: '测试8' },
+  { id: '12', name: '测试9' },
+  { id: '13', name: '测试10' },
+];
 
 const mockAssets = [
   {
     id: '1',
-    name: '片头动画.mp4',
-    type: 'video',
-    size: '15.2 MB',
-    duration: '00:45',
-    category: '视频素材',
-    createdAt: '2024-01-15',
-    projectName: '企业宣传片',
+    name: '豆浆打包杯',
+    category: 'prop',
+    type: 'image',
+    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop',
   },
   {
     id: '2',
-    name: '主视觉海报.png',
+    name: '外卖头盔',
+    category: 'prop',
     type: 'image',
-    size: '2.1 MB',
-    resolution: '1920x1080',
-    category: '图片素材',
-    createdAt: '2024-01-14',
-    projectName: '文旅宣传',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop',
   },
   {
     id: '3',
-    name: '背景音乐.wav',
-    type: 'audio',
-    size: '8.5 MB',
-    duration: '02:30',
-    category: '音频素材',
-    createdAt: '2024-01-14',
-    projectName: '短剧项目',
+    name: '早餐煎饼车',
+    category: 'prop',
+    type: 'image',
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=300&fit=crop',
   },
   {
     id: '4',
-    name: '剧本大纲.docx',
-    type: 'document',
-    size: '45 KB',
-    category: '文档',
-    createdAt: '2024-01-13',
-    projectName: '短剧项目',
+    name: '古风美女',
+    category: 'character',
+    type: 'image',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
   },
   {
     id: '5',
-    name: '分镜设计稿.jpg',
+    name: '城市夜景',
+    category: 'scene',
     type: 'image',
-    size: '3.8 MB',
-    resolution: '2560x1440',
-    category: '图片素材',
-    createdAt: '2024-01-13',
-    projectName: '企业宣传片',
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300&h=300&fit=crop',
   },
   {
     id: '6',
-    name: '配音录音.mp3',
-    type: 'audio',
-    size: '5.2 MB',
-    duration: '01:45',
-    category: '音频素材',
-    createdAt: '2024-01-12',
-    projectName: '文旅宣传',
+    name: '咖啡杯',
+    category: 'prop',
+    type: 'image',
+    image: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=300&h=300&fit=crop',
   },
 ];
 
-type AssetType = 'all' | 'video' | 'image' | 'audio' | 'document';
+const mockSidebarProjects = [
+  { id: 'p1', name: '测试狼人' },
+  { id: 'p2', name: 'demo' },
+  { id: 'p3', name: '123456' },
+  { id: 'p4', name: '吸血鬼3' },
+  { id: 'p5', name: '吸血鬼2' },
+  { id: 'p6', name: '吸血鬼1' },
+  { id: 'p7', name: 'test' },
+  { id: 'p8', name: '测试电商' },
+  { id: 'p9', name: '电商模式' },
+  { id: 'p10', name: '测试10' },
+];
 
 export default function Assets() {
-  const [assets, setAssets] = useState(mockAssets);
+  const navigate = useNavigate();
+  const [activeNav, setActiveNav] = useState('assets');
+  const [activeTab, setActiveTab] = useState('projects');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [selectedProject, setSelectedProject] = useState('2');
+  const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<AssetType>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [uploading, setUploading] = useState(false);
 
-  const categories = ['all', '视频素材', '图片素材', '音频素材', '文档'];
+  const handleNavClick = (key: string) => {
+    setActiveNav(key);
+    if (key === 'home') {
+      navigate('/app');
+    }
+  };
 
-  const filteredAssets = assets.filter((asset) => {
+  const toggleAssetSelection = (id: string) => {
+    setSelectedAssets((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
+  };
+
+  const filteredAssets = mockAssets.filter((asset) => {
+    const matchesCategory = activeCategory === 'all' || asset.category === activeCategory;
     const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || asset.type === filterType;
-    const matchesCategory = selectedCategory === 'all' || asset.category === selectedCategory;
-    return matchesSearch && matchesType && matchesCategory;
+    return matchesCategory && matchesSearch;
   });
 
-  const getAssetIcon = (type: string) => {
-    switch (type) {
-      case 'video':
-        return Film;
-      case 'image':
-        return Image;
-      case 'audio':
-        return Music;
-      case 'document':
-        return FileText;
-      default:
-        return FileText;
+  const toggleSelectAll = () => {
+    if (selectedAssets.length === filteredAssets.length) {
+      setSelectedAssets([]);
+    } else {
+      setSelectedAssets(filteredAssets.map((a) => a.id));
     }
   };
-
-  const getTypeStyle = (type: string) => {
-    switch (type) {
-      case 'video':
-        return 'bg-blue-100 text-blue-600';
-      case 'image':
-        return 'bg-emerald-100 text-emerald-600';
-      case 'audio':
-        return 'bg-purple-100 text-purple-600';
-      case 'document':
-        return 'bg-amber-100 text-amber-600';
-      default:
-        return 'bg-slate-100 text-slate-600';
-    }
-  };
-
-  const handleUpload = () => {
-    setUploading(true);
-    setTimeout(() => {
-      setUploading(false);
-    }, 2000);
-  };
-
-  const handleDelete = (id: string) => {
-    setAssets(assets.filter((a) => a.id !== id));
-  };
-
-  const stats = [
-    { label: '全部素材', value: assets.length, icon: FolderOpen },
-    { label: '视频', value: assets.filter((a) => a.type === 'video').length, icon: Film },
-    { label: '图片', value: assets.filter((a) => a.type === 'image').length, icon: Image },
-    { label: '音频', value: assets.filter((a) => a.type === 'audio').length, icon: Music },
-  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">素材管理</h1>
-          <p className="text-slate-500 mt-1">管理和组织您的视频、图片、音频和文档素材</p>
-        </div>
-        <button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-        >
-          <Upload className="w-5 h-5" />
-          {uploading ? '上传中...' : '上传素材'}
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <div key={idx} className="bg-white rounded-xl p-4 border border-slate-200">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                  <Icon className="w-5 h-5 text-slate-600" />
-                </div>
-                <span className="text-2xl font-bold text-slate-800">{stat.value}</span>
-              </div>
-              <div className="text-sm text-slate-500 mt-2">{stat.label}</div>
+    <div className="h-screen bg-black flex overflow-hidden">
+      {/* Left Sidebar */}
+      <aside className="w-56 bg-black/50 border-r border-white/10 flex flex-col flex-shrink-0">
+        {/* Logo */}
+        <div className="h-14 flex items-center px-4 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+              <Sparkles className="w-4.5 h-4.5 text-white" />
             </div>
-          );
-        })}
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索素材名称..."
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <span className="text-white font-bold text-base">麦预演</span>
           </div>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as AssetType)}
-                className="pl-10 pr-8 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+          <div className="space-y-1 mb-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => handleNavClick(item.key)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeNav === item.key
+                      ? 'bg-pink-500/20 text-pink-400'
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Project Section */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between px-3 mb-2">
+              <span className="text-white/40 text-xs font-medium">项目</span>
+              <button
+                onClick={() => navigate('/app/projects/new')}
+                className="flex items-center gap-1 px-2 py-1 text-white/60 hover:text-white hover:bg-white/10 rounded text-xs transition-colors"
               >
-                <option value="all">全部类型</option>
-                <option value="video">视频</option>
-                <option value="image">图片</option>
-                <option value="audio">音频</option>
-                <option value="document">文档</option>
-              </select>
+                <Plus className="w-3 h-3" />
+                新建项目
+              </button>
             </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat === 'all' ? '全部分类' : cat}
-                </option>
+
+            <div className="space-y-0.5">
+              {mockSidebarProjects.map((project) => (
+                <button
+                  key={project.id}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg group transition-colors hover:bg-white/5"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-1 h-1 rounded-full bg-pink-400" />
+                    <span className="text-white/70 text-sm truncate">{project.name}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    className="p-1 text-white/40 hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </button>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
-        </div>
-      </div>
+        </nav>
+      </aside>
 
-      {/* Assets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredAssets.length > 0 ? (
-          filteredAssets.map((asset) => {
-            const Icon = getAssetIcon(asset.type);
-            return (
-              <div
-                key={asset.id}
-                className="bg-white rounded-xl border border-slate-200 p-4 hover:border-blue-300 hover:shadow-md transition-all"
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="h-14 bg-black/50 backdrop-blur border-b border-white/10 flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-white font-semibold">麦预演</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/80 hover:text-white text-sm transition-colors">
+              <Gift className="w-4 h-4 text-yellow-400" />
+              邀请有礼
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/80 hover:text-white text-sm transition-colors">
+              <Video className="w-4 h-4" />
+              视频详细
+            </button>
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
+              <div className="w-3 h-3 rounded-full bg-pink-500" />
+              <span className="text-white text-sm font-medium">2780.4</span>
+            </div>
+            <button className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
+              订阅
+            </button>
+            <button className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+              <Bell className="w-4 h-4" />
+            </button>
+            <button className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+              <Settings className="w-4 h-4" />
+            </button>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+              U
+            </div>
+          </div>
+        </header>
+
+        {/* Asset Library Content */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Project list sidebar */}
+          <div className="w-48 border-r border-white/10 bg-black/30 overflow-y-auto py-4 px-2">
+            <div className="text-white/40 text-xs mb-2 px-2">项目</div>
+            {mockProjects.map((project) => (
+              <button
+                key={project.id}
+                onClick={() => setSelectedProject(project.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  selectedProject === project.id
+                    ? 'bg-pink-500/20 text-pink-400'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white'
+                }`}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-xl ${getTypeStyle(asset.type)} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-7 h-7" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-slate-800 truncate">{asset.name}</div>
-                    <div className="text-xs text-slate-500 mt-1">{asset.size}</div>
-                    {asset.duration && (
-                      <div className="text-xs text-slate-400">{asset.duration}</div>
-                    )}
-                    {asset.resolution && (
-                      <div className="text-xs text-slate-400">{asset.resolution}</div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs">
-                      {asset.category}
-                    </span>
-                    <span className="text-xs text-slate-400">{asset.projectName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                      <Download className="w-4 h-4" />
-                    </button>
+                {project.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Main asset area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header with tabs */}
+            <div className="px-6 py-4 border-b border-white/10">
+              <div className="flex items-center gap-2 mb-4">
+                {assetTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                      activeTab === tab.key
+                        ? 'bg-pink-500 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Category tabs + search */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {categories.map((cat) => (
                     <button
-                      onClick={() => handleDelete(asset.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      key={cat.key}
+                      onClick={() => setActiveCategory(cat.key)}
+                      className={`px-3 py-1 text-sm font-medium rounded-full transition-colors ${
+                        activeCategory === cat.key
+                          ? 'bg-pink-500 text-white'
+                          : 'text-white/60 hover:text-white hover:bg-white/5'
+                      }`}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {cat.label}
                     </button>
-                  </div>
+                  ))}
+                </div>
+                <div className="flex-1" />
+                <div className="relative">
+                  <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="搜索"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-white text-sm focus:outline-none focus:border-pink-500/50 w-40"
+                  />
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <FolderOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-500">暂无素材</p>
-            <button
-              onClick={handleUpload}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
-            >
-              上传第一个素材
-            </button>
+            </div>
+
+            {/* Asset grid */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredAssets.map((asset) => (
+                  <div
+                    key={asset.id}
+                    onClick={() => toggleAssetSelection(asset.id)}
+                    className={`group relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
+                      selectedAssets.includes(asset.id)
+                        ? 'border-pink-500'
+                        : 'border-transparent hover:border-white/20'
+                    }`}
+                  >
+                    <img
+                      src={asset.image}
+                      alt={asset.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white text-sm">{asset.name}</span>
+                        <button className="p-1 text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    {selectedAssets.includes(asset.id) && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
+                        <CheckSquare className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-white/10 flex items-center justify-between">
+              <button className="flex items-center gap-2 px-4 py-2 bg-pink-500/20 text-pink-400 text-sm font-medium rounded-full hover:bg-pink-500/30 transition-colors">
+                <Upload className="w-4 h-4" />
+                导入素材
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-white/40 text-xs">
+                  已选择 {selectedAssets.length} 项
+                </span>
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  <CheckSquare className="w-4 h-4" />
+                  全选
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/60 hover:text-white text-sm transition-colors">
+                  <Plus className="w-4 h-4" />
+                  批量添加到项目
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/60 hover:text-white text-sm transition-colors">
+                  <Download className="w-4 h-4" />
+                  批量下载
+                </button>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

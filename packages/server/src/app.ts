@@ -24,6 +24,7 @@ import organizationRoutes from './routes/organizations';
 import videoGenerationRoutes from './routes/videoGeneration';
 import templateRoutes from './routes/templates';
 import agentChatRoutes from './routes/agentChat';
+import adminRoutes from './routes/admin';
 import { agentEngine } from './agents/AgentEngine';
 
 const app = express();
@@ -156,6 +157,7 @@ app.use('/api/organizations', organizationRoutes);
 app.use('/api/video-generation', videoGenerationRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/agent-chat', agentChatRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

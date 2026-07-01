@@ -1,30 +1,98 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Home,
+  FolderOpen,
+  User,
+  Plus,
+  MoreHorizontal,
+  Sparkles,
   Film,
-  Bot,
-  CheckCircle,
-  Play,
-  TrendingUp,
-  Clock,
-  Zap,
+  Tv,
+  ShoppingBag,
+  Hand,
+  Gamepad2,
+  ChevronRight,
+  Gift,
+  Video,
+  Bell,
+  Settings,
 } from 'lucide-react';
-import { statsApi } from '../services/statsApi';
+import { projectApi } from '../services/projectApi';
+
+const creationModes = [
+  {
+    key: 'short_drama',
+    title: '短剧/漫剧模式',
+    desc: '连贯剧情，一键成片。',
+    icon: Film,
+    gradient: 'from-orange-500 to-red-600',
+    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&h=250&fit=crop',
+  },
+  {
+    key: 'movie',
+    title: '电影模式',
+    desc: '服务于电影。',
+    icon: Video,
+    gradient: 'from-blue-500 to-purple-600',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop',
+  },
+  {
+    key: 'tv_drama',
+    title: '电视剧模式',
+    desc: '服务于电视剧。',
+    icon: Tv,
+    gradient: 'from-yellow-500 to-orange-600',
+    image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=250&fit=crop',
+  },
+  {
+    key: 'ecommerce',
+    title: '电商模式',
+    desc: '短视频矩阵、视频口播、动作参考。',
+    icon: ShoppingBag,
+    gradient: 'from-pink-500 to-rose-600',
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop',
+  },
+  {
+    key: 'manual',
+    title: '手搓模式',
+    desc: '提示词要求过高，新手请慎用。',
+    icon: Hand,
+    gradient: 'from-amber-500 to-yellow-600',
+    image: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=400&h=250&fit=crop',
+  },
+  {
+    key: 'roaming',
+    title: '漫游模式',
+    desc: '互动影视游戏。',
+    icon: Gamepad2,
+    gradient: 'from-cyan-500 to-blue-600',
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=250&fit=crop',
+  },
+];
+
+const navItems = [
+  { key: 'home', label: '首页', icon: Home },
+  { key: 'assets', label: '资产库', icon: FolderOpen },
+  { key: 'ai_actors', label: 'AI演员', icon: User },
+];
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState<any>(null);
+  const [activeNav, setActiveNav] = useState('home');
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [points] = useState(2780.4);
 
   useEffect(() => {
-    loadStats();
+    loadProjects();
   }, []);
 
-  const loadStats = async () => {
+  const loadProjects = async () => {
     try {
-      const res: any = await statsApi.overview();
+      const res: any = await projectApi.list({ page: 1, pageSize: 20 });
       if (res.success) {
-        setStats(res.data);
+        setProjects(res.data.items || []);
       }
     } catch (e) {
       console.error(e);
@@ -33,259 +101,233 @@ export default function Dashboard() {
     }
   };
 
-  const statCards = [
-    {
-      label: '项目总数',
-      value: stats?.totalProjects || 0,
-      icon: Film,
-      gradient: 'from-primary to-primary-light',
-    },
-    {
-      label: '进行中',
-      value: stats?.inProgressProjects || 0,
-      icon: Play,
-      gradient: 'from-warm to-amber-400',
-    },
-    {
-      label: '已完成',
-      value: stats?.completedProjects || 0,
-      icon: CheckCircle,
-      gradient: 'from-teal to-green-400',
-    },
-    {
-      label: '智能体',
-      value: stats?.totalAgents || 0,
-      icon: Bot,
-      gradient: 'from-primary to-teal',
-    },
-  ];
+  const handleCreateProject = () => {
+    navigate('/app/projects/new');
+  };
 
-  const projectTypeData = [
-    { label: '短剧生产', value: stats?.byType?.short_drama || 0, color: 'bg-primary' },
-    { label: '企业视频', value: stats?.byType?.corporate_video || 0, color: 'bg-teal' },
-    { label: '文旅宣传', value: stats?.byType?.tourism_promo || 0, color: 'bg-warm' },
-  ];
+  const handleNavClick = (key: string) => {
+    setActiveNav(key);
+    if (key === 'assets') {
+      navigate('/app/assets');
+    } else if (key === 'ai_actors') {
+      navigate('/app/ai-actors');
+    }
+  };
 
-  const totalTypeProjects = projectTypeData.reduce((sum, item) => sum + item.value, 0);
+  const getProjectModeLabel = (type: string) => {
+    const map: Record<string, string> = {
+      short_drama: '短剧模式',
+      corporate_video: '企业视频',
+      tourism_promo: '文旅宣传',
+      ecommerce: '电商模式',
+      movie: '电影模式',
+      tv_drama: '电视剧模式',
+      manual: '手搓模式',
+      roaming: '漫游模式',
+    };
+    return map[type] || '短剧模式';
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="card-surface p-6 bg-gradient-primary">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">欢迎回来 👋</h1>
-            <p className="text-white/80">
-              AIGC 多智能体视频制作平台 - 让 AI 助您高效创作
-            </p>
-          </div>
-          <div className="hidden md:flex items-center gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">{stats?.totalScripts || 0}</div>
-              <div className="text-sm text-white/70">脚本总数</div>
+    <div className="h-screen bg-black flex overflow-hidden">
+      {/* Left Sidebar */}
+      <aside className="w-56 bg-black/50 border-r border-white/10 flex flex-col flex-shrink-0">
+        {/* Logo */}
+        <div className="h-14 flex items-center px-4 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+              <Sparkles className="w-4.5 h-4.5 text-white" />
             </div>
-            <div className="w-px h-12 bg-white/20" />
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">{stats?.totalTasks || 0}</div>
-              <div className="text-sm text-white/70">任务总数</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {statCards.map((card, idx) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={idx}
-              className="card-surface p-5"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xs text-text-secondary flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +12%
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-text-primary mb-1">
-                {loading ? '-' : card.value}
-              </div>
-              <div className="text-sm text-text-secondary">{card.label}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card-surface p-6">
-          <h3 className="font-semibold text-text-primary mb-4">项目类型分布</h3>
-          <div className="space-y-4">
-            {projectTypeData.map((item, idx) => (
-              <div key={idx}>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-text-secondary">{item.label}</span>
-                  <span className="font-medium text-text-primary">
-                    {item.value} 个
-                    <span className="text-text-tertiary ml-1">
-                      ({totalTypeProjects > 0 ? Math.round((item.value / totalTypeProjects) * 100) : 0}%)
-                    </span>
-                  </span>
-                </div>
-                <div className="h-2 bg-bg-surface rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${item.color} rounded-full transition-all`}
-                    style={{
-                      width: totalTypeProjects > 0 ? `${(item.value / totalTypeProjects) * 100}%` : '0%',
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+            <span className="text-white font-bold text-base">麦预演</span>
           </div>
         </div>
 
-        <div className="lg:col-span-2 card-surface p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-text-primary">最近项目</h3>
-            <button onClick={() => navigate('/app/projects')} className="text-sm text-primary hover:text-primary-hover transition-colors">
-              查看全部
-            </button>
-          </div>
-          <div className="space-y-3">
-            {stats?.recentProjects?.length > 0 ? (
-              stats.recentProjects.map((project: any) => (
-                <div
-                  key={project.id}
-                  onClick={() => navigate(`/app/projects/${project.id}`)}
-                  className="flex items-center justify-between p-3 hover:bg-bg-surface rounded-lg transition-colors cursor-pointer"
+        {/* Nav */}
+        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+          <div className="space-y-1 mb-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => handleNavClick(item.key)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeNav === item.key
+                      ? 'bg-pink-500/20 text-pink-400'
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                      <Film className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-text-primary text-sm">
-                        {project.name}
-                      </div>
-                      <div className="text-xs text-text-secondary">
-                        {getProjectTypeLabel(project.type)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-text-primary">
-                        {project.progress}%
-                      </div>
-                      <div className="w-20 h-1.5 bg-bg-surface rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full"
-                          style={{ width: `${project.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${getStatusStyle(
-                        project.status
-                      )}`}
-                    >
-                      {getStatusLabel(project.status)}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-text-tertiary">
-                <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>暂无项目</p>
-              </div>
-            )}
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </div>
 
-      <div className="card-surface p-6">
-        <h3 className="font-semibold text-text-primary mb-4">快速开始</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            {
-              title: '短剧生产',
-              desc: 'AI 生成短剧剧本、分镜、配音、剪辑全流程',
-              type: 'short_drama',
-              gradient: 'from-primary to-primary-light',
-            },
-            {
-              title: '企业视频营销',
-              desc: '企业宣传片、产品视频、营销视频一站式制作',
-              type: 'corporate_video',
-              gradient: 'from-teal to-green-400',
-            },
-            {
-              title: '文旅宣传',
-              desc: '地方文旅宣传片、景点介绍、民俗文化视频',
-              type: 'tourism_promo',
-              gradient: 'from-warm to-amber-400',
-            },
-          ].map((item, idx) => (
-            <button
-              key={idx}
-              onClick={() => navigate('/app/projects/new')}
-              className="group p-5 border border-border rounded-xl hover:border-border-hover hover:shadow-md transition-all text-left"
-            >
-              <div
-                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
+          {/* Project Section */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between px-3 mb-2">
+              <span className="text-white/40 text-xs font-medium">项目</span>
+              <button
+                onClick={() => navigate('/app/projects/new')}
+                className="flex items-center gap-1 px-2 py-1 text-white/60 hover:text-white hover:bg-white/10 rounded text-xs transition-colors"
               >
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-semibold text-text-primary mb-1">{item.title}</h4>
-              <p className="text-sm text-text-secondary">{item.desc}</p>
+                <Plus className="w-3 h-3" />
+                新建项目
+              </button>
+            </div>
+
+            <div className="space-y-0.5">
+              {loading ? (
+                <div className="px-3 py-4 text-white/40 text-xs">加载中...</div>
+              ) : projects.length === 0 ? (
+                <div className="px-3 py-4 text-white/40 text-xs">暂无项目</div>
+              ) : (
+                projects.map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => navigate(`/app/projects/${project.id}/workbench`)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg group transition-colors hover:bg-white/5"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-1 h-1 rounded-full bg-pink-400" />
+                      <span className="text-white/70 text-sm truncate">{project.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white/30 text-xs px-1.5 py-0.5 bg-white/5 rounded">
+                        {getProjectModeLabel(project.type)}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="p-1 text-white/40 hover:text-white rounded transition-colors"
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="h-14 bg-black/50 backdrop-blur border-b border-white/10 flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-white font-semibold">麦预演</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/80 hover:text-white text-sm transition-colors">
+              <Gift className="w-4 h-4 text-yellow-400" />
+              邀请有礼
             </button>
-          ))}
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-white/80 hover:text-white text-sm transition-colors">
+              <Video className="w-4 h-4" />
+              视频详细
+            </button>
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
+              <div className="w-3 h-3 rounded-full bg-pink-500" />
+              <span className="text-white text-sm font-medium">{points}</span>
+            </div>
+            <button className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
+              订阅
+            </button>
+            <button className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+              <Bell className="w-4 h-4" />
+            </button>
+            <button className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+              <Settings className="w-4 h-4" />
+            </button>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+              U
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-6">
+              <h1 className="text-white text-2xl font-bold mb-2">选择创作模式</h1>
+              <p className="text-white/50 text-sm">选择适合您的视频创作模式，开始AI视频制作之旅</p>
+            </div>
+
+            {/* Creation Modes Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {creationModes.map((mode) => {
+                const Icon = mode.icon;
+                return (
+                  <div
+                    key={mode.key}
+                    className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/10 hover:border-pink-500/50 transition-all duration-300 cursor-pointer"
+                    onClick={() => handleCreateProject()}
+                  >
+                    {/* Background Image */}
+                    <div className="aspect-video relative overflow-hidden">
+                      <img
+                        src={mode.image}
+                        alt={mode.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                      
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${mode.gradient} flex items-center justify-center`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <h3 className="text-white font-semibold text-lg">{mode.title}</h3>
+                        </div>
+                        <p className="text-white/60 text-sm mb-3 line-clamp-2">{mode.desc}</p>
+                        <button className="inline-flex items-center gap-1 px-4 py-1.5 bg-white text-black text-sm font-medium rounded-full hover:bg-white/90 transition-colors">
+                          立即创作
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="mt-8 grid grid-cols-4 gap-4">
+              {[
+                { label: '总项目数', value: projects.length, icon: Film },
+                { label: '进行中', value: projects.filter((p) => p.status === 'in_production' || p.status === 'planning').length, icon: Video },
+                { label: '已完成', value: projects.filter((p) => p.status === 'completed').length, icon: Sparkles },
+                { label: '累计积分', value: points, icon: Gift },
+              ].map((stat, idx) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-pink-400" />
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-white/50 text-sm">{stat.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
-
-function getProjectTypeLabel(type: string) {
-  const map: Record<string, string> = {
-    short_drama: '短剧生产',
-    corporate_video: '企业视频',
-    tourism_promo: '文旅宣传',
-  };
-  return map[type] || type;
-}
-
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    draft: '草稿',
-    planning: '规划中',
-    in_production: '制作中',
-    in_review: '审核中',
-    review: '审核中',
-    completed: '已完成',
-    cancelled: '已取消',
-    paused: '已暂停',
-    failed: '失败',
-    archived: '已归档',
-  };
-  return map[status] || status;
-}
-
-function getStatusStyle(status: string) {
-  const map: Record<string, string> = {
-    draft: 'bg-bg-surface text-text-secondary',
-    planning: 'bg-blue-50 text-blue-600',
-    in_production: 'bg-amber-50 text-amber-600',
-    in_review: 'bg-primary-bg text-primary',
-    review: 'bg-primary-bg text-primary',
-    completed: 'bg-teal/10 text-state-success',
-    cancelled: 'bg-red-50 text-state-error',
-    paused: 'bg-orange-50 text-state-warning',
-    failed: 'bg-red-50 text-state-error',
-    archived: 'bg-bg-surface text-text-tertiary',
-  };
-  return map[status] || 'bg-bg-surface text-text-secondary';
 }

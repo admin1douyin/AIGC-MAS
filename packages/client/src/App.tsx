@@ -18,6 +18,9 @@ import ScriptEditor from './pages/ScriptEditor';
 import ChatAgent from './pages/ChatAgent';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AdminSettings from './pages/AdminSettings';
+import VideoWorkbench from './pages/VideoWorkbench';
+import AIActors from './pages/AIActors';
 import { AuthProvider } from './lib/AuthContext';
 
 function App() {
@@ -43,7 +46,10 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
           <Route path="subscription" element={<Subscription />} />
+          <Route path="admin/settings" element={<AdminSettings />} />
+          <Route path="ai-actors" element={<AIActors />} />
         </Route>
+        <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );

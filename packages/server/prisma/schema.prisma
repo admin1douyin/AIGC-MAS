@@ -654,3 +654,26 @@ model ProjectTemplate {
   @@index([type])
   @@map("project_templates")
 }
+
+enum ConfigCategory {
+  seedance
+  payment
+  email
+  storage
+  general
+}
+
+model SystemConfig {
+  id          String         @id @default(uuid())
+  category    ConfigCategory
+  key         String
+  value       String?
+  description String?
+  encrypted   Boolean        @default(false)
+  updatedAt   DateTime       @updatedAt
+  updatedBy   String?
+
+  @@unique([category, key])
+  @@index([category])
+  @@map("system_configs")
+}

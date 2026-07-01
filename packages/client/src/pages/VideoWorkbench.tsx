@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import {
   ArrowLeft,
   Plus,
@@ -92,6 +93,14 @@ interface AssetItem {
   image: string;
 }
 
+interface VideoGenConfig {
+  ratios: string[];
+  resolutions: string[];
+  models: string[];
+  durations: string[];
+  styles: { id: string; name: string; image: string }[];
+}
+
 const NODE_TYPES = [
   { type: 'script', label: '短视频脚本', icon: FileText },
   { type: 'storyboard', label: '分镜', icon: Layers },
@@ -109,15 +118,7 @@ const ASSET_CATEGORIES = [
   { key: 'prop', label: '道具' },
 ];
 
-const MOCK_PROJECTS: ProjectItem[] = [
-  { id: '1', name: '椰子水电商营销', updatedAt: '2小时前' },
-  { id: '2', name: '新品发布会宣传片', updatedAt: '昨天' },
-  { id: '3', name: '618大促广告', updatedAt: '3天前' },
-  { id: '4', name: '品牌故事短片', updatedAt: '1周前' },
-  { id: '5', name: '产品使用教程', updatedAt: '2周前' },
-  { id: '6', name: '双11预热视频', updatedAt: '1个月前' },
-  { id: '7', name: '春节拜年视频', updatedAt: '2个月前' },
-];
+
 
 const MOCK_ASSETS: AssetItem[] = [
   { id: 'c1', name: '年轻女性模特', category: 'character', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop' },
@@ -174,6 +175,15 @@ export default function VideoWorkbench() {
   const [videoDetailTab, setVideoDetailTab] = useState<'all' | 'processing' | 'completed' | 'failed'>('all');
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [videoTasks, setVideoTasks] = useState<VideoTask[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(false);
+  const [config, setConfig] = useState<VideoGenConfig | null>(null);
+  const [generatingScript, setGeneratingScript] = useState(false);
+  const [generatingStoryboard, setGeneratingStoryboard] = useState(false);
+  const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [showScriptPrompt, setShowScriptPrompt] = useState(false);
+  const [scriptPrompt, setScriptPrompt] = useState('');
 
   const [settingsRatio, setSettingsRatio] = useState('16:9');
   const [settingsResolution, setSettingsResolution] = useState('1080P');
@@ -218,36 +228,91 @@ export default function VideoWorkbench() {
     setNodes(initialNodes);
   }, []);
 
-  useEffect(() => {
-    const mockTasks: VideoTask[] = [
-      { id: 'smv_2071576896524503840', type: '视频生成', progress: 35, status: 'processing', time: '2026-06-28 20:58:08', points: 0 },
-      { id: 'smv_2071189716727533568', type: '视频生成', progress: 100, status: 'completed', time: '2026-06-28 19:35:14', points: 120, thumbnail: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=200&h=120&fit=crop' },
-      { id: 'smv_207118912540033024', type: '视频生成', progress: 100, status: 'completed', time: '2026-06-28 19:08:59', points: 120, thumbnail: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=200&h=120&fit=crop' },
-      { id: 'smv_2071188828116985872', type: '视频生成', progress: 100, status: 'completed', time: '2026-06-28 19:07:52', points: 120, thumbnail: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200&h=120&fit=crop' },
-      { id: 'smv_2071185749698080768', type: '视频生成', progress: 100, status: 'failed', time: '2026-06-28 18:55:38', points: 0 },
-      { id: 'smv_2071133247389375104', type: '视频生成', progress: 100, status: 'completed', time: '2026-06-28 18:06:15', points: 120, thumbnail: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=200&h=120&fit=crop' },
-    ];
-    setVideoTasks(mockTasks);
+  const fetchConfig = useCallback(async () => {
+    try {
+      setLoadingConfig(true);
+      const res = await api.get('/video-generation/config') as unknown as VideoGenConfig;
+      if (res) {
+        setConfig(res);
+        if (res.ratios?.length > 0) setSettingsRatio(res.ratios[0]);
+        if (res.resolutions?.length > 0) setSettingsResolution(res.resolutions[1] || res.resolutions[0]);
+        if (res.models?.length > 0) setSettingsModel(res.models[0]);
+        if (res.durations?.length > 0) setSettingsDuration(res.durations[1] || res.durations[0]);
+        if (res.styles?.length > 0) setSettingsStyle(res.styles[0].id);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch config:', err);
+    } finally {
+      setLoadingConfig(false);
+    }
+  }, []);
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoadingProjects(true);
+      const res = await api.get('/projects') as unknown as ProjectItem[];
+      if (res) {
+        setProjects(res);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch projects:', err);
+    } finally {
+      setLoadingProjects(false);
+    }
+  }, []);
+
+  const fetchTasks = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const res = await api.get(`/video-generation/projects/${projectId}/tasks`) as unknown as VideoTask[];
+      if (res) {
+        setVideoTasks(res);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch tasks:', err);
+    }
+  }, [projectId]);
+
+  const pollTaskStatus = useCallback(async (taskId: string) => {
+    try {
+      const res = await api.get(`/video-generation/tasks/${taskId}`) as unknown as VideoTask;
+      if (res) {
+        setVideoTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, ...res } : t))
+        );
+        return res;
+      }
+    } catch (err: any) {
+      console.error(`Failed to poll task ${taskId}:`, err);
+    }
+    return null;
   }, []);
 
   useEffect(() => {
+    fetchConfig();
+    fetchProjects();
+  }, [fetchConfig, fetchProjects]);
+
+  useEffect(() => {
+    if (projectId) {
+      fetchTasks();
+    }
+  }, [projectId, fetchTasks]);
+
+  useEffect(() => {
+    const processingTasks = videoTasks.filter(
+      (t) => t.status === 'processing' || t.status === 'pending'
+    );
+    if (processingTasks.length === 0) return;
+
     const interval = setInterval(() => {
-      setVideoTasks((prev) =>
-        prev.map((task) => {
-          if (task.status === 'processing' && task.progress < 100) {
-            const newProgress = Math.min(task.progress + Math.random() * 5, 100);
-            return {
-              ...task,
-              progress: newProgress,
-              status: newProgress >= 100 ? 'completed' : 'processing',
-            };
-          }
-          return task;
-        })
-      );
+      processingTasks.forEach((task) => {
+        pollTaskStatus(task.id);
+      });
     }, 3000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [videoTasks, pollTaskStatus]);
 
   const handleCanvasRightClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -391,6 +456,74 @@ export default function VideoWorkbench() {
     return Math.round(baseRate * duration * resolutionMultiplier * modelMultiplier * 10) / 10;
   };
 
+  const handleGenerateScript = async () => {
+    if (!projectId || !scriptPrompt.trim()) return;
+    try {
+      setGeneratingScript(true);
+      const res = await api.post('/video-generation/generate-script', {
+        projectId,
+        prompt: scriptPrompt,
+        sceneCount: 3,
+      }) as unknown as { scenes: SceneItem[]; scriptId: string };
+      if (res?.scenes) {
+        setScenes(res.scenes);
+        setShowScriptPrompt(false);
+        setScriptPrompt('');
+      }
+    } catch (err: any) {
+      console.error('Failed to generate script:', err);
+    } finally {
+      setGeneratingScript(false);
+    }
+  };
+
+  const handleGenerateStoryboard = async () => {
+    if (!projectId) return;
+    try {
+      setGeneratingStoryboard(true);
+      const res = await api.post('/video-generation/generate-storyboard', {
+        scriptId: 'script-1',
+        projectId,
+        sceneCount: scenes.length || 3,
+      }) as unknown as { shots: StoryboardShot[] };
+      if (res?.shots) {
+        setShots(res.shots);
+      }
+    } catch (err: any) {
+      console.error('Failed to generate storyboard:', err);
+    } finally {
+      setGeneratingStoryboard(false);
+    }
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!projectId) return;
+    try {
+      setGeneratingVideo(true);
+      const res = await api.post('/video-generation/generate', {
+        projectId,
+        prompt: scenes.map((s) => s.description).join(' '),
+        model: settingsModel,
+        duration: settingsDuration,
+        aspectRatio: settingsRatio,
+        resolution: settingsResolution,
+        style: settingsStyle,
+      }) as unknown as VideoTask;
+      if (res) {
+        setVideoTasks((prev) => [res, ...prev]);
+        setShowVideoDetail(true);
+      }
+    } catch (err: any) {
+      console.error('Failed to generate video:', err);
+    } finally {
+      setGeneratingVideo(false);
+    }
+  };
+
+  const handleProjectClick = (projectId: string) => {
+    navigate(`/app/projects/${projectId}/workbench`);
+  };
+
   const getNodeIcon = (type: string) => {
     const nodeType = NODE_TYPES.find((n) => n.type === type);
     return nodeType?.icon || FileText;
@@ -438,7 +571,7 @@ export default function VideoWorkbench() {
           <div className="h-6 w-px bg-white/10" />
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
-              <Sparkles className="w-4.5 h-4.5 text-white" />
+              <Sparkles className="w-[18px] h-[18px] text-white" />
             </div>
             <div className="flex flex-col">
               <span className="text-white text-sm font-semibold">{projectName}</span>
@@ -501,30 +634,41 @@ export default function VideoWorkbench() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {MOCK_PROJECTS.map((project, idx) => (
-              <button
-                key={project.id}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
-                  idx === 0
-                    ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30'
-                    : 'hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  idx === 0
-                    ? 'bg-gradient-to-br from-pink-500 to-purple-500'
-                    : 'bg-white/10'
-                }`}>
-                  <FolderOpen className={`w-5 h-5 ${idx === 0 ? 'text-white' : 'text-white/50'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-medium truncate ${idx === 0 ? 'text-white' : 'text-white/70'}`}>
-                    {project.name}
+            {loadingProjects ? (
+              <div className="py-8 text-center">
+                <div className="text-white/40 text-sm">加载中...</div>
+              </div>
+            ) : projects.length > 0 ? (
+              projects.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => handleProjectClick(project.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    project.id === projectId
+                      ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30'
+                      : 'hover:bg-white/5 border border-transparent'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    project.id === projectId
+                      ? 'bg-gradient-to-br from-pink-500 to-purple-500'
+                      : 'bg-white/10'
+                  }`}>
+                    <FolderOpen className={`w-5 h-5 ${project.id === projectId ? 'text-white' : 'text-white/50'}`} />
                   </div>
-                  <div className="text-xs text-white/40">{project.updatedAt}</div>
-                </div>
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-medium truncate ${project.id === projectId ? 'text-white' : 'text-white/70'}`}>
+                      {project.name}
+                    </div>
+                    <div className="text-xs text-white/40">{project.updatedAt}</div>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="py-8 text-center">
+                <div className="text-white/40 text-sm">暂无项目</div>
+              </div>
+            )}
           </div>
           <div className="p-2 border-t border-white/10">
             <button
@@ -937,9 +1081,13 @@ export default function VideoWorkbench() {
                     </div>
                   </div>
 
-                  <button className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20">
+                  <button
+                    onClick={() => setShowScriptPrompt(true)}
+                    disabled={generatingScript}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50"
+                  >
                     <Wand2 className="w-4 h-4" />
-                    AI 优化脚本
+                    {generatingScript ? '生成中...' : 'AI 生成脚本'}
                   </button>
                 </>
               )}
@@ -1025,9 +1173,13 @@ export default function VideoWorkbench() {
                     ))}
                   </div>
 
-                  <button className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20">
+                  <button
+                    onClick={handleGenerateStoryboard}
+                    disabled={generatingStoryboard}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50"
+                  >
                     <Wand2 className="w-4 h-4" />
-                    生成全部分镜
+                    {generatingStoryboard ? '生成中...' : 'AI 生成分镜'}
                   </button>
                 </>
               )}
@@ -1063,9 +1215,13 @@ export default function VideoWorkbench() {
                     </button>
                   </div>
 
-                  <button className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20">
+                  <button
+                    onClick={handleGenerateVideo}
+                    disabled={generatingVideo}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50"
+                  >
                     <Play className="w-4 h-4" />
-                    开始生成视频
+                    {generatingVideo ? '生成中...' : '开始生成视频'}
                   </button>
 
                   <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
@@ -1078,6 +1234,68 @@ export default function VideoWorkbench() {
           </div>
         )}
       </div>
+
+      {/* Script Generation Prompt Modal */}
+      {showScriptPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[500px] bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                  <Wand2 className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-base">AI 生成脚本</h3>
+                  <p className="text-white/40 text-xs mt-0.5">输入主题描述，AI 自动生成短视频脚本</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScriptPrompt(false)}
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-white/50 text-xs font-medium mb-2 block">主题描述</label>
+                <textarea
+                  value={scriptPrompt}
+                  onChange={(e) => setScriptPrompt(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all resize-none"
+                  placeholder="例如：椰子水产品广告，突出天然健康、清爽解渴的特点..."
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setShowScriptPrompt(false)}
+                  className="px-5 py-2.5 text-white/60 hover:text-white text-sm font-medium transition-all"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleGenerateScript}
+                  disabled={generatingScript || !scriptPrompt.trim()}
+                  className="px-7 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {generatingScript ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      生成中...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      生成脚本
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Video Settings Modal */}
       {showVideoSettings && (
@@ -1104,126 +1322,134 @@ export default function VideoWorkbench() {
 
             {/* Content */}
             <div className="flex-1 p-6 overflow-y-auto space-y-7">
-              {/* 尺寸 */}
-              <div>
-                <div className="flex items-center gap-2 mb-3.5">
-                  <span className="text-white/90 text-sm font-semibold">尺寸比例</span>
+              {loadingConfig ? (
+                <div className="py-16 text-center">
+                  <div className="text-white/40 text-sm">加载配置中...</div>
                 </div>
-                <div className="flex gap-2.5">
-                  {RATIO_OPTIONS.map((ratio) => (
-                    <button
-                      key={ratio}
-                      onClick={() => setSettingsRatio(ratio)}
-                      className={`flex-1 py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                        settingsRatio === ratio
-                          ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
-                      }`}
-                    >
-                      {ratio}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              ) : (
+                <>
+                  {/* 尺寸 */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3.5">
+                      <span className="text-white/90 text-sm font-semibold">尺寸比例</span>
+                    </div>
+                    <div className="flex gap-2.5">
+                      {(config?.ratios || RATIO_OPTIONS).map((ratio) => (
+                        <button
+                          key={ratio}
+                          onClick={() => setSettingsRatio(ratio)}
+                          className={`flex-1 py-3 text-sm font-medium rounded-xl border-2 transition-all ${
+                            settingsRatio === ratio
+                              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
+                          }`}
+                        >
+                          {ratio}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* 分辨率 */}
-              <div>
-                <div className="flex items-center gap-2 mb-3.5">
-                  <span className="text-white/90 text-sm font-semibold">分辨率</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2.5">
-                  {RESOLUTION_OPTIONS.map((res) => (
-                    <button
-                      key={res}
-                      onClick={() => setSettingsResolution(res)}
-                      className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                        settingsResolution === res
-                          ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
-                      }`}
-                    >
-                      {res}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  {/* 分辨率 */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3.5">
+                      <span className="text-white/90 text-sm font-semibold">分辨率</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2.5">
+                      {(config?.resolutions || RESOLUTION_OPTIONS).map((res) => (
+                        <button
+                          key={res}
+                          onClick={() => setSettingsResolution(res)}
+                          className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
+                            settingsResolution === res
+                              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
+                          }`}
+                        >
+                          {res}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* 模型 */}
-              <div>
-                <div className="flex items-center gap-2 mb-3.5">
-                  <span className="text-white/90 text-sm font-semibold">模型选择</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {MODEL_OPTIONS.map((model) => (
-                    <button
-                      key={model}
-                      onClick={() => setSettingsModel(model)}
-                      className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                        settingsModel === model
-                          ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
-                      }`}
-                    >
-                      {model}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  {/* 模型 */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3.5">
+                      <span className="text-white/90 text-sm font-semibold">模型选择</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {(config?.models || MODEL_OPTIONS).map((model) => (
+                        <button
+                          key={model}
+                          onClick={() => setSettingsModel(model)}
+                          className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
+                            settingsModel === model
+                              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
+                          }`}
+                        >
+                          {model}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* 时长 */}
-              <div>
-                <div className="flex items-center gap-2 mb-3.5">
-                  <span className="text-white/90 text-sm font-semibold">视频时长</span>
-                </div>
-                <div className="grid grid-cols-6 gap-2">
-                  {DURATION_OPTIONS.map((duration) => (
-                    <button
-                      key={duration}
-                      onClick={() => setSettingsDuration(duration)}
-                      className={`py-2.5 text-sm font-medium rounded-xl border-2 transition-all ${
-                        settingsDuration === duration
-                          ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
-                          : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
-                      }`}
-                    >
-                      {duration}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  {/* 时长 */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3.5">
+                      <span className="text-white/90 text-sm font-semibold">视频时长</span>
+                    </div>
+                    <div className="grid grid-cols-6 gap-2">
+                      {(config?.durations || DURATION_OPTIONS).map((duration) => (
+                        <button
+                          key={duration}
+                          onClick={() => setSettingsDuration(duration)}
+                          className={`py-2.5 text-sm font-medium rounded-xl border-2 transition-all ${
+                            settingsDuration === duration
+                              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
+                          }`}
+                        >
+                          {duration}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* 风格 */}
-              <div>
-                <div className="flex items-center gap-2 mb-3.5">
-                  <span className="text-white/90 text-sm font-semibold">风格选择</span>
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {STYLE_PRESETS.map((style) => (
-                    <button
-                      key={style.id}
-                      onClick={() => setSettingsStyle(style.id)}
-                      className={`rounded-xl overflow-hidden border-2 transition-all group ${
-                        settingsStyle === style.id
-                          ? 'border-pink-500 ring-2 ring-pink-500/30'
-                          : 'border-transparent hover:border-white/20'
-                      }`}
-                    >
-                      <div className="aspect-[4/3] relative overflow-hidden">
-                        <img src={style.image} alt={style.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-2 left-0 right-0 px-2">
-                          <span className="text-white text-xs font-medium">{style.name}</span>
-                        </div>
-                        {settingsStyle === style.id && (
-                          <div className="absolute top-2 right-2 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
-                            <CheckSquare className="w-3 h-3 text-white" />
+                  {/* 风格 */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3.5">
+                      <span className="text-white/90 text-sm font-semibold">风格选择</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {(config?.styles || STYLE_PRESETS).map((style) => (
+                        <button
+                          key={style.id}
+                          onClick={() => setSettingsStyle(style.id)}
+                          className={`rounded-xl overflow-hidden border-2 transition-all group ${
+                            settingsStyle === style.id
+                              ? 'border-pink-500 ring-2 ring-pink-500/30'
+                              : 'border-transparent hover:border-white/20'
+                          }`}
+                        >
+                          <div className="aspect-[4/3] relative overflow-hidden">
+                            <img src={style.image} alt={style.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            <div className="absolute bottom-2 left-0 right-0 px-2">
+                              <span className="text-white text-xs font-medium">{style.name}</span>
+                            </div>
+                            {settingsStyle === style.id && (
+                              <div className="absolute top-2 right-2 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
+                                <CheckSquare className="w-3 h-3 text-white" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Footer */}
@@ -1484,7 +1710,7 @@ export default function VideoWorkbench() {
               <div className="flex-1 p-5 overflow-y-auto">
                 {/* Search */}
                 <div className="relative mb-4">
-                  <Search className="w-4.5 h-4.5 text-white/40 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <Search className="w-[18px] h-[18px] text-white/40 absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="搜索素材..."

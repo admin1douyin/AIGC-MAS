@@ -155,7 +155,7 @@ export default function Assets() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
               <Sparkles className="w-[18px] h-[18px] text-white" />
             </div>
-            <span className="text-white font-bold text-base">麦预演</span>
+            <span className="text-white font-bold text-base">AIGC-MAS</span>
           </div>
         </div>
 
@@ -227,7 +227,7 @@ export default function Assets() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-white font-semibold">麦预演</span>
+            <span className="text-white font-semibold">AIGC-MAS</span>
           </div>
 
           <div className="flex items-center gap-3">

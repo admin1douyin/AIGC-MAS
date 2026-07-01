@@ -471,4 +471,218 @@ router.get('/projects/:projectId/tasks', requireAuth, async (req: Request, res: 
   }
 });
 
+
+const generateScriptSchema = z.object({
+  projectId: z.string(),
+  prompt: z.string(),
+  style: z.string().optional(),
+  duration: z.number().min(1).max(300).optional(),
+  sceneCount: z.number().int().min(1).max(20).optional(),
+});
+
+function generateRandomUuid(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+const sceneDescriptions = [
+  '开场全景，展现整体环境氛围',
+  '中景推进，聚焦主体人物动作',
+  '特写镜头，突出关键细节表情',
+  '侧面跟拍，展现动作连续性',
+  '俯拍视角，营造空间纵深感',
+  '仰拍镜头，突出主体气势感',
+  '慢动作呈现，强化情绪表达',
+  '转场过渡，自然衔接下一场景',
+];
+
+const dialogues = [
+  '让我们开始这段奇妙的旅程',
+  '每一个细节都值得被记录',
+  '这一刻，时间仿佛静止了',
+  '故事才刚刚开始...',
+  '让美好永远定格在这一刻',
+];
+
+const cameraAngles = ['全景', '中景', '特写', '俯拍', '仰拍', '跟拍', '推镜头', '拉镜头'];
+
+router.post('/generate-script', requireAuth, validate(generateScriptSchema), async (req: Request, res: Response) => {
+  try {
+    const { projectId, prompt, style, duration = 30, sceneCount = 3 } = req.body;
+    const profileId = req.profile!.id;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: '项目不存在' }
+      });
+    }
+
+    const perSceneDuration = Math.floor(duration / sceneCount);
+    const title = 'AI生成脚本 - ' + prompt.slice(0, 20);
+
+    const scenes = Array.from({ length: sceneCount }, (_, index) => {
+      const descIndex = index % sceneDescriptions.length;
+      const dialogueIndex = index % dialogues.length;
+      const cameraIndex = index % cameraAngles.length;
+
+      return {
+        id: generateRandomUuid(),
+        index: index + 1,
+        description: `${prompt} - ${sceneDescriptions[descIndex]}`,
+        dialogue: dialogues[dialogueIndex],
+        duration: perSceneDuration,
+        cameraAngle: cameraAngles[cameraIndex],
+      };
+    });
+
+    const videoScript = await prisma.videoScript.create({
+      data: {
+        projectId,
+        title,
+        logline: prompt,
+        scenes: JSON.stringify(scenes),
+        totalDuration: duration,
+        version: 1,
+        isActive: true,
+      },
+    });
+
+    const result = {
+      ...videoScript,
+      scenes,
+    };
+
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    console.error('Generate script error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'GENERATION_ERROR', message: error.message }
+    });
+  }
+});
+
+const generateStoryboardSchema = z.object({
+  scriptId: z.string(),
+  projectId: z.string(),
+  sceneCount: z.number().int().min(1).max(20).optional(),
+  style: z.string().optional(),
+  aspectRatio: z.string().optional(),
+});
+
+router.post('/generate-storyboard', requireAuth, validate(generateStoryboardSchema), async (req: Request, res: Response) => {
+  try {
+    const { scriptId, projectId, sceneCount = 3, style, aspectRatio } = req.body;
+
+    const script = await prisma.videoScript.findUnique({
+      where: { id: scriptId },
+    });
+
+    if (!script) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: '脚本不存在' }
+      });
+    }
+
+    let scenes: any[] = [];
+    try {
+      scenes = JSON.parse((script.scenes as string) || '[]');
+    } catch (e) {
+      scenes = [];
+    }
+
+    if (scenes.length === 0) {
+      scenes = Array.from({ length: sceneCount }, (_, index) => ({
+        id: generateRandomUuid(),
+        index: index + 1,
+        description: `场景 ${index + 1}`,
+        duration: 5,
+      }));
+    }
+
+    const updatedScenes = scenes.map((scene: any, index: number) => {
+      const baseDesc = scene.description || '';
+      const cameraAngle = scene.cameraAngle || '';
+      const styleDesc = style || 'cinematic';
+
+      const promptParts = [
+        baseDesc,
+        styleDesc ? `${styleDesc} style` : '',
+        cameraAngle ? `camera angle: ${cameraAngle}` : '',
+        aspectRatio ? `aspect ratio: ${aspectRatio}` : '',
+        'high quality, detailed, professional video',
+      ].filter(Boolean);
+
+      const cnPromptParts = [
+        baseDesc,
+        styleDesc ? `风格：${styleDesc}` : '',
+        cameraAngle ? `镜头角度：${cameraAngle}` : '',
+        '高质量，细节丰富，专业视频制作',
+      ].filter(Boolean);
+
+      return {
+        ...scene,
+        prompt: promptParts.join(', '),
+        promptCn: cnPromptParts.join('，'),
+        referenceImage: '',
+      };
+    });
+
+    await prisma.videoScript.update({
+      where: { id: scriptId },
+      data: {
+        scenes: JSON.stringify(updatedScenes),
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        scenes: updatedScenes,
+        scriptId,
+      },
+    });
+  } catch (error: any) {
+    console.error('Generate storyboard error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'GENERATION_ERROR', message: error.message }
+    });
+  }
+});
+
+router.get('/tasks/:taskId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { taskId } = req.params;
+
+    const status = await seedanceService.getTaskStatus(taskId);
+
+    res.json({
+      success: true,
+      data: {
+        taskId: status.taskId,
+        status: status.status,
+        videoUrl: status.videoUrl,
+        progress: status.progress,
+        error: status.error,
+      },
+    });
+  } catch (error: any) {
+    console.error('Get task status error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'TASK_ERROR', message: error.message }
+    });
+  }
+});
+
 export default router;

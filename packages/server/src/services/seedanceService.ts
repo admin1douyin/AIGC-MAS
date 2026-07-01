@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import crypto from 'crypto';
 
 export interface SeedanceConfig {
   apiKey: string;
@@ -7,13 +8,16 @@ export interface SeedanceConfig {
 
 export interface GenerateVideoParams {
   prompt: string;
-  model?: string;
+  model?: 'seedance-2.0' | 'seedance-2.5';
   duration?: number;
-  resolution?: string;
-  aspectRatio?: string;
+  resolution?: '720p' | '1080p' | '4k';
+  aspectRatio?: '16:9' | '9:16' | '1:1' | '4:3';
   style?: string;
   seed?: number;
-  referenceImage?: string;
+  referenceImages?: string[];
+  negativePrompt?: string;
+  fps?: number;
+  cameraMotion?: 'static' | 'pan_left' | 'pan_right' | 'tilt_up' | 'tilt_down' | 'zoom_in' | 'zoom_out' | 'orbit';
 }
 
 export interface VideoGenerationTask {
@@ -22,7 +26,10 @@ export interface VideoGenerationTask {
   progress?: number;
   videoUrl?: string;
   thumbnailUrl?: string;
+  duration?: number;
   error?: string;
+  createdAt?: string;
+  completedAt?: string;
 }
 
 class SeedanceService {
@@ -61,6 +68,19 @@ class SeedanceService {
     return !!config?.apiKey;
   }
 
+  private isMockMode(): boolean {
+    return !this.config?.apiKey || this.config.apiKey.includes('YOUR') || this.config.apiKey === '';
+  }
+
+  private generateMockTaskId(): string {
+    return `mock_${crypto.randomBytes(16).toString('hex')}`;
+  }
+
+  private mockVideoUrls = [
+    'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_2mb.mp4',
+  ];
+
   async generateVideo(params: GenerateVideoParams): Promise<VideoGenerationTask> {
     const config = await this.getConfig();
     if (!config) {
@@ -69,6 +89,10 @@ class SeedanceService {
         status: 'failed',
         error: 'Seedance API 未配置，请联系管理员配置',
       };
+    }
+
+    if (this.isMockMode()) {
+      return this.mockGenerateVideo(params);
     }
 
     try {
@@ -80,13 +104,16 @@ class SeedanceService {
         },
         body: JSON.stringify({
           prompt: params.prompt,
-          model: params.model || 'seedance-2.0',
+          model: params.model || 'seedance-2.5',
           duration: params.duration || 5,
           resolution: params.resolution || '1080p',
           aspect_ratio: params.aspectRatio || '16:9',
           style: params.style,
           seed: params.seed,
-          reference_image: params.referenceImage,
+          reference_images: params.referenceImages,
+          negative_prompt: params.negativePrompt,
+          fps: params.fps,
+          camera_motion: params.cameraMotion,
         }),
       });
 
@@ -104,6 +131,7 @@ class SeedanceService {
         taskId: data.task_id || data.id,
         status: 'processing',
         progress: 0,
+        createdAt: new Date().toISOString(),
       };
     } catch (error: any) {
       return {
@@ -122,6 +150,10 @@ class SeedanceService {
         status: 'failed',
         error: 'Seedance API 未配置',
       };
+    }
+
+    if (this.isMockMode() || taskId.startsWith('mock_')) {
+      return this.mockGetTaskStatus(taskId);
     }
 
     try {
@@ -146,7 +178,10 @@ class SeedanceService {
         progress: data.progress,
         videoUrl: data.video_url,
         thumbnailUrl: data.thumbnail_url,
+        duration: data.duration,
         error: data.error,
+        createdAt: data.created_at,
+        completedAt: data.completed_at,
       };
     } catch (error: any) {
       return {
@@ -155,6 +190,67 @@ class SeedanceService {
         error: error.message || '网络错误',
       };
     }
+  }
+
+  async batchGenerateVideo(paramsList: GenerateVideoParams[]): Promise<VideoGenerationTask[]> {
+    const results: VideoGenerationTask[] = [];
+    for (const params of paramsList) {
+      const result = await this.generateVideo(params);
+      results.push(result);
+    }
+    return results;
+  }
+
+  getModels(): { id: string; name: string; description: string }[] {
+    return [
+      {
+        id: 'seedance-2.0',
+        name: 'Seedance 2.0',
+        description: '稳定版，适合大多数视频生成场景，支持5-10秒视频生成',
+      },
+      {
+        id: 'seedance-2.5',
+        name: 'Seedance 2.5',
+        description: '最新版，画质提升，支持更长时长和更多镜头运动',
+      },
+    ];
+  }
+
+  private mockGenerateVideo(params: GenerateVideoParams): VideoGenerationTask {
+    const taskId = this.generateMockTaskId();
+    console.log(`[SeedanceService] Mock generate video: ${params.prompt.substring(0, 50)}...`);
+
+    return {
+      taskId,
+      status: 'processing',
+      progress: 0,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  private mockGetTaskStatus(taskId: string): VideoGenerationTask {
+    const randomProgress = Math.floor(Math.random() * 100);
+    const isCompleted = randomProgress > 80;
+
+    if (isCompleted) {
+      return {
+        taskId,
+        status: 'completed',
+        progress: 100,
+        videoUrl: this.mockVideoUrls[Math.floor(Math.random() * this.mockVideoUrls.length)],
+        thumbnailUrl: '',
+        duration: 5,
+        createdAt: new Date(Date.now() - 60000).toISOString(),
+        completedAt: new Date().toISOString(),
+      };
+    }
+
+    return {
+      taskId,
+      status: 'processing',
+      progress: randomProgress,
+      createdAt: new Date(Date.now() - 30000).toISOString(),
+    };
   }
 
   async generateStoryboard(params: {

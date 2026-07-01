@@ -8,6 +8,19 @@ export interface AuthUser {
   role: string;
 }
 
+export interface Subscription {
+  id?: string;
+  profileId?: string;
+  plan: 'free' | 'pro' | 'enterprise';
+  credits: number;
+  usedCredits: number;
+  status: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export const authApi = {
   // Get current user profile from our database
   getProfile: async (): Promise<{ success: boolean; data?: AuthUser; error?: string }> => {
@@ -18,6 +31,27 @@ export const authApi = {
       }
 
       const response = await fetch('/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get user subscription info
+  getSubscription: async (): Promise<{ success: boolean; data?: Subscription; error?: string }> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      const response = await fetch('/api/auth/subscription', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }

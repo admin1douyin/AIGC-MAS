@@ -19,6 +19,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { projectApi } from '../services/projectApi';
+import { authApi, type Subscription } from '../services/authApi';
 
 const creationModes = [
   {
@@ -82,17 +83,24 @@ export default function Dashboard() {
   const [activeNav, setActiveNav] = useState('home');
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [points] = useState(2780.4);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
-    loadProjects();
+    loadData();
   }, []);
 
-  const loadProjects = async () => {
+  const loadData = async () => {
     try {
-      const res: any = await projectApi.list({ page: 1, pageSize: 20 });
-      if (res.success) {
-        setProjects(res.data.items || []);
+      const [projectsRes, subRes] = await Promise.all([
+        projectApi.list({ page: 1, pageSize: 20 }),
+        authApi.getSubscription(),
+      ]);
+
+      if (projectsRes.success) {
+        setProjects(projectsRes.data.items || []);
+      }
+      if (subRes.success && subRes.data) {
+        setSubscription(subRes.data);
       }
     } catch (e) {
       console.error(e);
@@ -236,7 +244,9 @@ export default function Dashboard() {
             </button>
             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
               <div className="w-3 h-3 rounded-full bg-pink-500" />
-              <span className="text-white text-sm font-medium">{points}</span>
+              <span className="text-white text-sm font-medium">
+                {subscription ? (subscription.credits - subscription.usedCredits).toFixed(1) : '--'}
+              </span>
             </div>
             <button className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
               订阅
@@ -306,7 +316,7 @@ export default function Dashboard() {
                 { label: '总项目数', value: projects.length, icon: Film },
                 { label: '进行中', value: projects.filter((p) => p.status === 'in_production' || p.status === 'planning').length, icon: Video },
                 { label: '已完成', value: projects.filter((p) => p.status === 'completed').length, icon: Sparkles },
-                { label: '累计积分', value: points, icon: Gift },
+                { label: '累计积分', value: subscription ? subscription.credits.toFixed(1) : '--', icon: Gift },
               ].map((stat, idx) => {
                 const Icon = stat.icon;
                 return (

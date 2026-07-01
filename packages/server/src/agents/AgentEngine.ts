@@ -304,7 +304,7 @@ class AgentEngine {
     }
 
     this.initialized = true;
-    console.log('[AgentEngine] Initialized with', AGENT_REGISTRY.length, 'agent types');
+    console.info('[AgentEngine] Initialized with', AGENT_REGISTRY.length, 'agent types');
   }
 
   getAgentRegistry() {
@@ -328,7 +328,7 @@ class AgentEngine {
         },
       });
     }
-    console.log('[AgentEngine] Seeded', AGENT_REGISTRY.length, 'agents');
+    console.info('[AgentEngine] Seeded', AGENT_REGISTRY.length, 'agents');
   }
 
   async startProject(projectId: string) {
@@ -459,7 +459,7 @@ class AgentEngine {
   ) {
     for (let phaseIdx = 0; phaseIdx < phases.length; phaseIdx++) {
       if (signal.aborted) {
-        console.log('[AgentEngine] Project aborted:', projectId);
+        console.info('[AgentEngine] Project aborted:', projectId);
         return;
       }
 
@@ -509,7 +509,7 @@ class AgentEngine {
     });
 
     this.activeProjects.delete(projectId);
-    console.log('[AgentEngine] Project completed:', projectId);
+    console.info('[AgentEngine] Project completed:', projectId);
   }
 
   private async executeParallelPhase(

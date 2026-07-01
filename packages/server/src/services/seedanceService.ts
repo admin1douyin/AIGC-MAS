@@ -218,7 +218,7 @@ class SeedanceService {
 
   private mockGenerateVideo(params: GenerateVideoParams): VideoGenerationTask {
     const taskId = this.generateMockTaskId();
-    console.log(`[SeedanceService] Mock generate video: ${params.prompt.substring(0, 50)}...`);
+    console.debug(`[SeedanceService] Mock generate video: ${params.prompt.substring(0, 50)}...`);
 
     return {
       taskId,

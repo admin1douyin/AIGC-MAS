@@ -87,10 +87,10 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {[
-              { value: '12+', label: 'AI智能体' },
-              { value: '10000+', label: '已创作视频' },
+              { value: '500+', label: '完成项目' },
+              { value: '50+', label: 'AI模型集成' },
               { value: '98%', label: '客户满意度' },
-              { value: '5分钟', label: '快速出片' },
+              { value: '3x', label: '更快生产' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="vp-display text-3xl md:text-4xl mb-2 vp-gradient-text">{stat.value}</div>

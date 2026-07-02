@@ -40,6 +40,8 @@ import {
   Trash2,
   Edit3,
   Wand2,
+  AlertCircle,
+  Camera,
 } from 'lucide-react';
 
 interface WorkbenchNode {
@@ -94,16 +96,18 @@ interface AssetItem {
 }
 
 interface VideoGenConfig {
-  ratios: string[];
-  resolutions: string[];
-  models: string[];
-  durations: string[];
-  styles: { id: string; name: string; image: string }[];
+  aspectRatios: { id: string; label: string; description: string }[];
+  resolutions: { id: string; label: string; description: string; coefficient: number }[];
+  models: { id: string; label: string; coefficient: number; description: string }[];
+  durations: number[];
+  styles: { id: string; label: string; preview: string }[];
+  baseCreditPerSecond: number;
 }
 
 const NODE_TYPES = [
   { type: 'script', label: '短视频脚本', icon: FileText },
   { type: 'storyboard', label: '分镜', icon: Layers },
+  { type: 'preview-image', label: '预演图', icon: Camera },
   { type: 'video', label: '视频生成', icon: Video },
   { type: 'image', label: '图片', icon: ImageIcon },
   { type: 'audio', label: '音频', icon: Music },
@@ -117,6 +121,16 @@ const ASSET_CATEGORIES = [
   { key: 'scene', label: '场景' },
   { key: 'prop', label: '道具' },
 ];
+
+const CREATION_MODES = [
+  { id: 'short-drama', name: '短剧/漫剧模式', description: '连贯剧情，一键成片', gradient: 'from-orange-500/30 to-red-500/30' },
+  { id: 'movie', name: '电影模式', description: '服务于电影', gradient: 'from-blue-500/30 to-purple-500/30' },
+  { id: 'tv-series', name: '电视剧模式', description: '服务于电视剧', gradient: 'from-amber-500/30 to-yellow-500/30' },
+  { id: 'ecommerce', name: '电商模式', description: '短视频矩阵、视频口播、动作参考', gradient: 'from-green-500/30 to-teal-500/30' },
+  { id: 'manual', name: '手搞模式', description: '提示词要求过高，新手请慎用', gradient: 'from-pink-500/30 to-rose-500/30' },
+  { id: 'roaming', name: '漫游模式', description: '互动影视游戏', gradient: 'from-cyan-500/30 to-blue-500/30' },
+];
+
 
 
 
@@ -184,6 +198,16 @@ export default function VideoWorkbench() {
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [showScriptPrompt, setShowScriptPrompt] = useState(false);
   const [scriptPrompt, setScriptPrompt] = useState('');
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null);
+  const [showModeSelector, setShowModeSelector] = useState(false);
+  const [showShotDialog, setShowShotDialog] = useState(false);
+  const [shotCount, setShotCount] = useState(1);
+  const [generatingPreview, setGeneratingPreview] = useState<string | null>(null);
+
+  const showToast = (text: string, type: 'error' | 'success' = 'error') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const [settingsRatio, setSettingsRatio] = useState('16:9');
   const [settingsResolution, setSettingsResolution] = useState('1080P');
@@ -231,17 +255,19 @@ export default function VideoWorkbench() {
   const fetchConfig = useCallback(async () => {
     try {
       setLoadingConfig(true);
-      const res = await api.get('/video-generation/config') as unknown as VideoGenConfig;
-      if (res) {
-        setConfig(res);
-        if (res.ratios?.length > 0) setSettingsRatio(res.ratios[0]);
-        if (res.resolutions?.length > 0) setSettingsResolution(res.resolutions[1] || res.resolutions[0]);
-        if (res.models?.length > 0) setSettingsModel(res.models[0]);
-        if (res.durations?.length > 0) setSettingsDuration(res.durations[1] || res.durations[0]);
-        if (res.styles?.length > 0) setSettingsStyle(res.styles[0].id);
+      const res = await api.get('/video-generation/config') as any;
+      const configData: VideoGenConfig | null = res?.data || null;
+      if (configData) {
+        setConfig(configData);
+        if (configData.aspectRatios?.length > 0) setSettingsRatio(configData.aspectRatios[0].id);
+        if (configData.resolutions?.length > 0) setSettingsResolution(configData.resolutions[1]?.id || configData.resolutions[0].id);
+        if (configData.models?.length > 0) setSettingsModel(configData.models[0].label);
+        if (configData.durations?.length > 0) setSettingsDuration(configData.durations[1] + 'S' || configData.durations[0] + 'S');
+        if (configData.styles?.length > 0) setSettingsStyle(configData.styles[0].id);
       }
     } catch (err: any) {
       console.error('Failed to fetch config:', err);
+      showToast('加载配置失败，使用默认配置');
     } finally {
       setLoadingConfig(false);
     }
@@ -250,12 +276,18 @@ export default function VideoWorkbench() {
   const fetchProjects = useCallback(async () => {
     try {
       setLoadingProjects(true);
-      const res = await api.get('/projects') as unknown as ProjectItem[];
-      if (res) {
-        setProjects(res);
+      const res = await api.get('/projects') as any;
+      if (res?.data?.items) {
+        setProjects(res.data.items.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          thumbnail: p.thumbnailUrl,
+          updatedAt: new Date(p.updatedAt || p.createdAt).toLocaleDateString('zh-CN'),
+        })));
       }
     } catch (err: any) {
       console.error('Failed to fetch projects:', err);
+      showToast('加载项目列表失败');
     } finally {
       setLoadingProjects(false);
     }
@@ -264,23 +296,40 @@ export default function VideoWorkbench() {
   const fetchTasks = useCallback(async () => {
     if (!projectId) return;
     try {
-      const res = await api.get(`/video-generation/projects/${projectId}/tasks`) as unknown as VideoTask[];
-      if (res) {
-        setVideoTasks(res);
+      const res = await api.get(`/video-generation/projects/${projectId}/tasks`) as any;
+      const tasks = res?.data || [];
+      if (Array.isArray(tasks)) {
+        setVideoTasks(tasks.map((t: any) => ({
+          id: t.id || t.taskId,
+          type: t.model || '视频生成',
+          progress: t.status === 'completed' ? 100 : 0,
+          status: t.status || 'pending',
+          time: t.createdAt ? new Date(t.createdAt).toLocaleString('zh-CN') : '',
+          points: t.credits || 0,
+          thumbnail: t.thumbnailUrl,
+          videoUrl: t.url,
+        })));
       }
     } catch (err: any) {
       console.error('Failed to fetch tasks:', err);
+      showToast('加载任务列表失败');
     }
   }, [projectId]);
 
   const pollTaskStatus = useCallback(async (taskId: string) => {
     try {
-      const res = await api.get(`/video-generation/tasks/${taskId}`) as unknown as VideoTask;
-      if (res) {
+      const res = await api.get(`/video-generation/tasks/${taskId}`) as any;
+      const taskData = res?.data;
+      if (taskData) {
         setVideoTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, ...res } : t))
+          prev.map((t) => (t.id === taskId ? {
+            ...t,
+            progress: taskData.progress || t.progress,
+            status: taskData.status || t.status,
+            videoUrl: taskData.videoUrl || t.videoUrl,
+          } : t))
         );
-        return res;
+        return taskData;
       }
     } catch (err: any) {
       console.error(`Failed to poll task ${taskId}:`, err);
@@ -338,7 +387,7 @@ export default function VideoWorkbench() {
       x: (nodeMenuPosition.x + pan.x) / (zoom / 100),
       y: (nodeMenuPosition.y + pan.y) / (zoom / 100),
       width: 280,
-      height: type === 'script' ? 220 : type === 'storyboard' ? 260 : type === 'video' ? 200 : 180,
+      height: type === 'script' ? 220 : type === 'storyboard' ? 260 : type === 'preview-image' ? 320 : type === 'video' ? 200 : 180,
       title: nodeType?.label || '新节点',
       data: {},
     };
@@ -448,12 +497,58 @@ export default function VideoWorkbench() {
 
   const selectedNodeData = nodes.find((n) => n.id === selectedNode);
 
+
+  const handleGeneratePreviewImage = (nodeId: string) => {
+    setGeneratingPreview(nodeId);
+    setTimeout(() => {
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.id === nodeId
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  previewImage: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=225&fit=crop',
+                },
+              }
+            : n
+        )
+      );
+      setGeneratingPreview(null);
+      showToast('预演图生成完成', 'success');
+    }, 2000);
+  };
+
   const calculatePoints = () => {
-    const baseRate = 8.3;
+    const baseRate = config?.baseCreditPerSecond || 10;
     const duration = parseInt(settingsDuration);
-    const resolutionMultiplier = settingsResolution === '4K' ? 4 : settingsResolution === '1080P' ? 2 : settingsResolution === '720P' ? 1.5 : 1;
-    const modelMultiplier = settingsModel === 'Seedance 2.5' ? 1.5 : settingsModel === 'Seedance 2.0' ? 1 : settingsModel === 'Seedance 2.0 Fast' ? 0.8 : 0.5;
+    const resolutionObj = config?.resolutions?.find(r => r.id === settingsResolution);
+    const resolutionMultiplier = resolutionObj?.coefficient || (settingsResolution === '4k' ? 2 : settingsResolution === '1080p' ? 1.2 : settingsResolution === '720p' ? 1 : 0.8);
+    const modelObj = config?.models?.find(m => m.label === settingsModel);
+    const modelMultiplier = modelObj?.coefficient || (settingsModel === 'Seedance 2.5' ? 1.5 : settingsModel === 'Seedance 2.0' ? 1 : settingsModel === 'Seedance 2.0 Fast' ? 0.7 : 0.5);
     return Math.round(baseRate * duration * resolutionMultiplier * modelMultiplier * 10) / 10;
+  };
+
+  // Map display model name to API enum value
+  const getModelApiValue = (): 'seedance-2.0' | 'seedance-2.5' => {
+    const modelObj = config?.models?.find(m => m.label === settingsModel);
+    if (modelObj?.id) {
+      if (modelObj.id === 'seedance-2.5') return 'seedance-2.5';
+    }
+    if (settingsModel.includes('2.5')) return 'seedance-2.5';
+    return 'seedance-2.0';
+  };
+
+  // Map UI resolution to API value (e.g. "1080P" -> "1080p", "4K" -> "4k")
+  const getResolutionApiValue = (): string => {
+    const modelObj = config?.resolutions?.find(r => r.id === settingsResolution || r.label === settingsResolution);
+    if (modelObj?.id) return modelObj.id;
+    return settingsResolution.toLowerCase();
+  };
+
+  // Parse duration string to number (e.g. "5S" -> 5)
+  const getDurationApiValue = (): number => {
+    return parseInt(settingsDuration) || 5;
   };
 
   const handleGenerateScript = async () => {
@@ -464,14 +559,16 @@ export default function VideoWorkbench() {
         projectId,
         prompt: scriptPrompt,
         sceneCount: 3,
-      }) as unknown as { scenes: SceneItem[]; scriptId: string };
-      if (res?.scenes) {
-        setScenes(res.scenes);
+      }) as any;
+      const data = res?.data;
+      if (data?.scenes) {
+        setScenes(data.scenes);
         setShowScriptPrompt(false);
         setScriptPrompt('');
       }
     } catch (err: any) {
       console.error('Failed to generate script:', err);
+      showToast('生成脚本失败，请重试');
     } finally {
       setGeneratingScript(false);
     }
@@ -485,12 +582,20 @@ export default function VideoWorkbench() {
         scriptId: 'script-1',
         projectId,
         sceneCount: scenes.length || 3,
-      }) as unknown as { shots: StoryboardShot[] };
-      if (res?.shots) {
-        setShots(res.shots);
+      }) as any;
+      const data = res?.data;
+      if (data?.scenes) {
+        setShots(data.scenes.map((s: any, i: number) => ({
+          id: s.id || `shot-${i}`,
+          index: i + 1,
+          prompt: s.prompt || s.promptCn || s.description || '',
+          duration: s.duration || 3,
+          thumbnail: s.referenceImage || '',
+        })));
       }
     } catch (err: any) {
       console.error('Failed to generate storyboard:', err);
+      showToast('生成分镜失败，请重试');
     } finally {
       setGeneratingStoryboard(false);
     }
@@ -503,18 +608,30 @@ export default function VideoWorkbench() {
       const res = await api.post('/video-generation/generate', {
         projectId,
         prompt: scenes.map((s) => s.description).join(' '),
-        model: settingsModel,
-        duration: settingsDuration,
+        model: getModelApiValue(),
+        duration: getDurationApiValue(),
         aspectRatio: settingsRatio,
-        resolution: settingsResolution,
+        resolution: getResolutionApiValue(),
         style: settingsStyle,
-      }) as unknown as VideoTask;
-      if (res) {
-        setVideoTasks((prev) => [res, ...prev]);
+      }) as any;
+      const data = res?.data;
+      if (data) {
+        const newTask: VideoTask = {
+          id: data.taskId || data.id || `task-${Date.now()}`,
+          type: settingsModel,
+          progress: data.progress || 0,
+          status: data.status || 'processing',
+          time: new Date().toLocaleString('zh-CN'),
+          points: data.credits || calculatePoints(),
+          thumbnail: data.thumbnailUrl,
+          videoUrl: data.videoUrl,
+        };
+        setVideoTasks((prev) => [newTask, ...prev]);
         setShowVideoDetail(true);
       }
     } catch (err: any) {
       console.error('Failed to generate video:', err);
+      showToast(err?.response?.data?.error?.message || '视频生成失败，请重试');
     } finally {
       setGeneratingVideo(false);
     }
@@ -559,6 +676,20 @@ export default function VideoWorkbench() {
 
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl border animate-in slide-in-from-right ${
+          toastMessage.type === 'error'
+            ? 'bg-red-500/20 border-red-500/30 text-red-300'
+            : 'bg-green-500/20 border-green-500/30 text-green-300'
+        }`}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm font-medium">{toastMessage.text}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-70">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {/* Top Navigation Bar */}
       <header className="h-14 bg-zinc-950/90 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4 flex-shrink-0 z-50">
         <div className="flex items-center gap-3">
@@ -811,6 +942,76 @@ export default function VideoWorkbench() {
                         </div>
                       )}
 
+
+                      {node.type === 'preview-image' && (
+                        <div className="space-y-3 relative">
+                          {/* Top action bar */}
+                          <div className="flex items-center justify-between">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGeneratePreviewImage(node.id);
+                              }}
+                              disabled={generatingPreview === node.id}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-semibold rounded-full hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50"
+                            >
+                              <Sparkles className="w-3 h-3" />
+                              {generatingPreview === node.id ? '生成中...' : '生成预演图 +3.8'}
+                            </button>
+                            {generatingPreview === node.id ? (
+                              <div className="flex items-center gap-2 text-pink-400 text-xs">
+                                <div className="w-3 h-3 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
+                                生成中...
+                              </div>
+                            ) : node.data?.previewImage ? (
+                              <span className="text-green-400/60 text-xs">已完成</span>
+                            ) : null}
+                          </div>
+
+                          {/* Central canvas area */}
+                          <div className="aspect-video bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl flex items-center justify-center border border-white/10 relative overflow-hidden">
+                            {node.data?.previewImage ? (
+                              <img
+                                src={node.data.previewImage}
+                                alt="预演图"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="text-center py-6">
+                                <Camera className="w-10 h-10 text-white/20 mx-auto mb-2" />
+                                <p className="text-white/30 text-xs">点击上方按钮生成预演图</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Bottom action buttons */}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 text-white/60 text-xs rounded-xl border border-white/10 transition-all"
+                            >
+                              <Upload className="w-3 h-3" />
+                              本地上传预演图
+                            </button>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 text-white/60 text-xs rounded-xl border border-white/10 transition-all"
+                            >
+                              <History className="w-3 h-3" />
+                              历史上传预演图
+                            </button>
+                          </div>
+
+                          {/* Plus buttons on edges */}
+                          <button className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 hover:bg-pink-500/50 border border-white/20 flex items-center justify-center transition-all z-10">
+                            <Plus className="w-3 h-3 text-white/60" />
+                          </button>
+                          <button className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 hover:bg-pink-500/50 border border-white/20 flex items-center justify-center transition-all z-10">
+                            <Plus className="w-3 h-3 text-white/60" />
+                          </button>
+                        </div>
+                      )}
+
                       {node.type === 'video' && (
                         <div className="space-y-3">
                           <div className="aspect-video bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl flex items-center justify-center border border-white/10">
@@ -906,6 +1107,17 @@ export default function VideoWorkbench() {
               </div>
             )}
           </div>
+
+
+            {/* Empty Canvas State */}
+            {nodes.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                <div className="text-center">
+                  <MousePointer2 className="w-8 h-8 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/30 text-sm font-medium">右击画布 添加短视频脚本 或 分镜镜头</p>
+                </div>
+              </div>
+            )}
 
           {/* Bottom Toolbar */}
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-full px-2 py-1.5 shadow-2xl">
@@ -1334,17 +1546,17 @@ export default function VideoWorkbench() {
                       <span className="text-white/90 text-sm font-semibold">尺寸比例</span>
                     </div>
                     <div className="flex gap-2.5">
-                      {(config?.ratios || RATIO_OPTIONS).map((ratio) => (
+                      {(config?.aspectRatios || RATIO_OPTIONS.map(r => ({ id: r, label: r, description: '' }))).map((ratio: any) => (
                         <button
-                          key={ratio}
-                          onClick={() => setSettingsRatio(ratio)}
+                          key={ratio.id}
+                          onClick={() => setSettingsRatio(ratio.id)}
                           className={`flex-1 py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                            settingsRatio === ratio
+                            settingsRatio === ratio.id
                               ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
                               : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
                           }`}
                         >
-                          {ratio}
+                          {ratio.label || ratio.id}
                         </button>
                       ))}
                     </div>
@@ -1356,17 +1568,17 @@ export default function VideoWorkbench() {
                       <span className="text-white/90 text-sm font-semibold">分辨率</span>
                     </div>
                     <div className="grid grid-cols-4 gap-2.5">
-                      {(config?.resolutions || RESOLUTION_OPTIONS).map((res) => (
+                      {(config?.resolutions || RESOLUTION_OPTIONS.map(r => ({ id: r.toLowerCase(), label: r, description: '', coefficient: 1 }))).map((res: any) => (
                         <button
-                          key={res}
-                          onClick={() => setSettingsResolution(res)}
+                          key={res.id}
+                          onClick={() => setSettingsResolution(res.id)}
                           className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                            settingsResolution === res
+                            settingsResolution === res.id
                               ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
                               : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
                           }`}
                         >
-                          {res}
+                          {res.label || res.id}
                         </button>
                       ))}
                     </div>
@@ -1378,17 +1590,17 @@ export default function VideoWorkbench() {
                       <span className="text-white/90 text-sm font-semibold">模型选择</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                      {(config?.models || MODEL_OPTIONS).map((model) => (
+                      {(config?.models || MODEL_OPTIONS.map(m => ({ id: m.toLowerCase().replace(/ /g, '-'), label: m, coefficient: 1, description: '' }))).map((model: any) => (
                         <button
-                          key={model}
-                          onClick={() => setSettingsModel(model)}
+                          key={model.id}
+                          onClick={() => setSettingsModel(model.label || model.id)}
                           className={`py-3 text-sm font-medium rounded-xl border-2 transition-all ${
-                            settingsModel === model
+                            settingsModel === (model.label || model.id)
                               ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
                               : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
                           }`}
                         >
-                          {model}
+                          {model.label || model.id}
                         </button>
                       ))}
                     </div>
@@ -1400,19 +1612,22 @@ export default function VideoWorkbench() {
                       <span className="text-white/90 text-sm font-semibold">视频时长</span>
                     </div>
                     <div className="grid grid-cols-6 gap-2">
-                      {(config?.durations || DURATION_OPTIONS).map((duration) => (
-                        <button
-                          key={duration}
-                          onClick={() => setSettingsDuration(duration)}
-                          className={`py-2.5 text-sm font-medium rounded-xl border-2 transition-all ${
-                            settingsDuration === duration
-                              ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
-                              : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
-                          }`}
-                        >
-                          {duration}
-                        </button>
-                      ))}
+                      {(config?.durations || DURATION_OPTIONS.map(d => parseInt(d))).map((duration: any) => {
+                        const durationStr = String(duration) + 'S';
+                        return (
+                          <button
+                            key={durationStr}
+                            onClick={() => setSettingsDuration(durationStr)}
+                            className={`py-2.5 text-sm font-medium rounded-xl border-2 transition-all ${
+                              settingsDuration === durationStr
+                                ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500 text-pink-400'
+                                : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20 hover:text-white/80'
+                            }`}
+                          >
+                            {durationStr}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1422,7 +1637,7 @@ export default function VideoWorkbench() {
                       <span className="text-white/90 text-sm font-semibold">风格选择</span>
                     </div>
                     <div className="grid grid-cols-4 gap-3">
-                      {(config?.styles || STYLE_PRESETS).map((style) => (
+                      {(config?.styles || STYLE_PRESETS.map(s => ({ id: s.id, label: s.name, preview: s.image }))).map((style: any) => (
                         <button
                           key={style.id}
                           onClick={() => setSettingsStyle(style.id)}
@@ -1433,10 +1648,10 @@ export default function VideoWorkbench() {
                           }`}
                         >
                           <div className="aspect-[4/3] relative overflow-hidden">
-                            <img src={style.image} alt={style.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <img src={style.preview || ''} alt={style.label || style.id} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-2 left-0 right-0 px-2">
-                              <span className="text-white text-xs font-medium">{style.name}</span>
+                              <span className="text-white text-xs font-medium">{style.label || style.id}</span>
                             </div>
                             {settingsStyle === style.id && (
                               <div className="absolute top-2 right-2 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
@@ -1778,6 +1993,130 @@ export default function VideoWorkbench() {
           </div>
         </div>
       )}
+
+      {/* Shot Decomposition Dialog */}
+      {showShotDialog && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[400px] bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                  <Layers className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-base">选择镜头数量</h3>
+                  <p className="text-white/40 text-xs mt-0.5">① 拆解镜头数</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowShotDialog(false)}
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              {/* Shot count controller */}
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={() => setShotCount(Math.max(1, shotCount - 1))}
+                  className="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 flex items-center justify-center border border-white/10 transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="w-24 h-12 mx-4 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">{shotCount}</span>
+                </div>
+                <button
+                  onClick={() => setShotCount(Math.min(10, shotCount + 1))}
+                  className="w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 flex items-center justify-center border border-white/10 transition-all"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowShotDialog(false)}
+                  className="flex-1 py-3 text-white/60 hover:text-white text-sm font-medium rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+                >
+                  镜头数量
+                </button>
+                <button
+                  onClick={() => {
+                    setShowShotDialog(false);
+                    const newShots: StoryboardShot[] = Array.from({ length: shotCount }, (_, i) => ({
+                      id: `shot-auto-${Date.now()}-${i}`,
+                      index: i + 1,
+                      prompt: `镜头 ${i + 1} 提示词`,
+                      duration: 3,
+                    }));
+                    setShots(newShots);
+                    showToast(`已生成 ${shotCount} 个分镜`, 'success');
+                  }}
+                  className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2"
+                >
+                  生成分镜
+                  <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-xs">{shotCount}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Creation Mode Selector */}
+      {showModeSelector && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md">
+          <div className="w-[900px] max-h-[85vh] bg-zinc-900/95 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg">选择创作模式</h3>
+                  <p className="text-white/40 text-sm mt-0.5">选择适合你的创作模式开始项目</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModeSelector(false)}
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8">
+              <div className="grid grid-cols-3 gap-5">
+                {CREATION_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setShowModeSelector(false)}
+                    className={`group relative rounded-2xl border-2 border-white/10 hover:border-pink-500/50 bg-gradient-to-br ${mode.gradient} p-6 text-left transition-all hover:shadow-lg hover:shadow-pink-500/10 hover:-translate-y-0.5`}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+                        <Sparkles className="w-5 h-5 text-pink-400" />
+                      </div>
+                      <h4 className="text-white font-semibold text-base">{mode.name}</h4>
+                    </div>
+                    <p className="text-white/50 text-sm leading-relaxed">{mode.description}</p>
+                    <div className="mt-4 pt-3 border-t border-white/10">
+                      <span className="text-pink-400 text-xs font-medium group-hover:text-pink-300 transition-colors">
+                        开始创作
+                        <span className="ml-1 group-hover:translate-x-1 inline-block transition-transform">&rarr;</span>
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { validate } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase';
 import crypto from 'crypto';
-const multer = require('multer');
+import multer from 'multer';
 
 const router = Router();
 

@@ -27,23 +27,25 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        {/* Standalone full-screen pages with own layout */}
-        <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/app/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-        <Route path="/app/ai-actors" element={<ProtectedRoute><AIActors /></ProtectedRoute>} />
+
+        {/* Standalone full-screen pages with own layout (not nested in Layout) */}
         <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
 
-        {/* Layout-wrapped pages */}
+        {/* Layout-wrapped pages - Dashboard is the index route */}
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route index element={<Dashboard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/new" element={<NewProject />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="projects/:id/script" element={<ScriptEditor />} />
+          <Route path="assets" element={<Assets />} />
+          <Route path="ai-actors" element={<AIActors />} />
           <Route path="agents" element={<Agents />} />
           <Route path="agent-market" element={<AgentMarket />} />
           <Route path="chat" element={<ChatAgent />} />

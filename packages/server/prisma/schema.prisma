@@ -116,7 +116,7 @@ model Profile {
   email     String   @unique
   name      String
   avatarUrl String?
-  role      UserRole @default(viewer)
+  role      UserRole @default(creator)
   phone     String?
   bio       String?
   createdAt DateTime @default(now())

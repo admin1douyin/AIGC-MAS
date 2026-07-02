@@ -660,27 +660,74 @@ router.post('/generate-storyboard', requireAuth, validate(generateStoryboardSche
   }
 });
 
-router.get('/tasks/:taskId', requireAuth, async (req: Request, res: Response) => {
-  try {
-    const { taskId } = req.params;
+// Generate preview image (low-cost style preview)
+const generatePreviewSchema = z.object({
+  projectId: z.string(),
+  prompt: z.string(),
+  style: z.string().optional(),
+  aspectRatio: z.enum(['16:9', '9:16', '21:9', '1:1', '4:3']).optional(),
+});
 
-    const status = await seedanceService.getTaskStatus(taskId);
+router.post('/generate-preview', requireAuth, validate(generatePreviewSchema), async (req: Request, res: Response) => {
+  try {
+    const { projectId, prompt, style, aspectRatio } = req.body;
+    const profileId = req.profile!.id;
+
+    const credits = 3.8; // Fixed cost for preview image
+    const hasEnoughCredits = await checkAndDeductCredits(profileId, credits);
+
+    if (!hasEnoughCredits) {
+      return res.status(402).json({
+        success: false,
+        error: { code: 'INSUFFICIENT_CREDITS', message: '积分不足，预演图生成需要3.8积分' }
+      });
+    }
+
+    // Mock preview image generation (in production, call actual image generation service)
+    const taskId = `preview-${generateRandomUuid()}`;
+    const previewImages = [
+      'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=225&fit=crop',
+      'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=400&h=225&fit=crop',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225&fit=crop',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=225&fit=crop',
+      'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&h=225&fit=crop',
+    ];
+    const imageUrl = previewImages[Math.floor(Math.random() * previewImages.length)];
+
+    // Create asset record
+    await prisma.videoAsset.create({
+      data: {
+        projectId,
+        type: 'image',
+        name: `预演图 - ${prompt.substring(0, 30)}...`,
+        url: imageUrl,
+        category: 'preview',
+        metadata: JSON.stringify({
+          taskId,
+          prompt,
+          style,
+          aspectRatio,
+          credits,
+        }),
+        createdBy: profileId,
+      },
+    });
 
     res.json({
       success: true,
       data: {
-        taskId: status.taskId,
-        status: status.status,
-        videoUrl: status.videoUrl,
-        progress: status.progress,
-        error: status.error,
+        taskId,
+        imageUrl,
+        credits,
+        status: 'completed',
       },
     });
   } catch (error: any) {
-    console.error('Get task status error:', error);
+    console.error('Generate preview image error:', error);
+    await refundCredits(req.profile!.id, 3.8);
     res.status(500).json({
       success: false,
-      error: { code: 'TASK_ERROR', message: error.message }
+      error: { code: 'GENERATION_ERROR', message: error.message }
     });
   }
 });

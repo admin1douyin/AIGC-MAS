@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import * as crypto from 'crypto';
 
 export interface AlipayConfig {
   appId: string;
@@ -118,7 +119,6 @@ class AlipayService {
 
   private sign(content: string, privateKey: string): string {
     try {
-      const crypto = require('crypto');
       const signer = crypto.createSign('RSA-SHA256');
       signer.update(content);
       return signer.sign(privateKey, 'base64');
@@ -136,7 +136,6 @@ class AlipayService {
       const config = this.config;
       if (!config) return false;
 
-      const crypto = require('crypto');
       const verifier = crypto.createVerify('RSA-SHA256');
       verifier.update(content);
       return verifier.verify(config.publicKey, sign, 'base64');

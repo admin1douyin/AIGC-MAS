@@ -16,7 +16,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let _client: SupabaseClient | null = null;
 
-function isValidJwtToken(key: string): boolean {
+function isValidSupabaseKey(key: string): boolean {
+  if (key.startsWith('sb_publishable_') || key.startsWith('sb_secret_')) {
+    return key.length > 20;
+  }
   const parts = key.split('.');
   return parts.length === 3 && 
          parts[0].length > 0 && 
@@ -44,10 +47,10 @@ function getClient(): SupabaseClient {
     );
   }
 
-  if (!isValidJwtToken(supabaseServiceKey)) {
+  if (!isValidSupabaseKey(supabaseServiceKey)) {
     throw new Error(
-      `Supabase client not initialized: SUPABASE_SERVICE_ROLE_KEY is not a valid JWT token. ` +
-      `Valid JWT format: header.payload.signature (3 Base64-encoded parts separated by dots). ` +
+      `Supabase client not initialized: SUPABASE_SERVICE_ROLE_KEY is not a valid Supabase key. ` +
+      `Valid formats: JWT (header.payload.signature) or sb_publishable_/sb_secret_ prefix. ` +
       `Obtain the correct key from Supabase Dashboard > Project Settings > API.`
     );
   }

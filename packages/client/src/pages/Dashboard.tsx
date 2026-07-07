@@ -8,10 +8,7 @@ import {
   MoreHorizontal,
   Sparkles,
   Film,
-  Tv,
   ShoppingBag,
-  Hand,
-  Gamepad2,
   ChevronRight,
   Gift,
   Video,
@@ -24,51 +21,27 @@ import { authApi, type Subscription } from '../services/authApi';
 const creationModes = [
   {
     key: 'short_drama',
-    title: '短剧/漫剧模式',
-    desc: '连贯剧情，一键成片。',
+    title: '短剧生产',
+    desc: 'AI多智能体全流程协作，批量生产高质量短剧内容。',
     icon: Film,
     gradient: 'from-orange-500 to-red-600',
-    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&h=250&fit=crop',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=short%20drama%20film%20production%20scene%20colorful&image_size=landscape_16_9',
   },
   {
-    key: 'movie',
-    title: '电影模式',
-    desc: '服务于电影。',
-    icon: Video,
-    gradient: 'from-blue-500 to-purple-600',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop',
-  },
-  {
-    key: 'tv_drama',
-    title: '电视剧模式',
-    desc: '服务于电视剧。',
-    icon: Tv,
-    gradient: 'from-yellow-500 to-orange-600',
-    image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=250&fit=crop',
-  },
-  {
-    key: 'ecommerce',
-    title: '电商模式',
-    desc: '短视频矩阵、视频口播、动作参考。',
+    key: 'corporate_video',
+    title: '企业视频',
+    desc: '品牌分析+营销策划+视频制作，一站式企业解决方案。',
     icon: ShoppingBag,
-    gradient: 'from-pink-500 to-rose-600',
-    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop',
+    gradient: 'from-blue-500 to-teal-600',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=corporate%20video%20production%20business%20professional&image_size=landscape_16_9',
   },
   {
-    key: 'manual',
-    title: '手搓模式',
-    desc: '提示词要求过高，新手请慎用。',
-    icon: Hand,
-    gradient: 'from-amber-500 to-yellow-600',
-    image: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=400&h=250&fit=crop',
-  },
-  {
-    key: 'roaming',
-    title: '漫游模式',
-    desc: '互动影视游戏。',
-    icon: Gamepad2,
+    key: 'tourism_promo',
+    title: '文旅宣传',
+    desc: '文化挖掘+故事创作+视觉呈现，打造地方文旅名片。',
+    icon: Video,
     gradient: 'from-cyan-500 to-blue-600',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=250&fit=crop',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=tourism%20promotion%20scenic%20landscape%20cultural&image_size=landscape_16_9',
   },
 ];
 
@@ -124,22 +97,17 @@ export default function Dashboard() {
 
   const getProjectModeLabel = (type: string) => {
     const map: Record<string, string> = {
-      short_drama: '短剧模式',
+      short_drama: '短剧生产',
       corporate_video: '企业视频',
       tourism_promo: '文旅宣传',
-      ecommerce: '电商模式',
-      movie: '电影模式',
-      tv_drama: '电视剧模式',
-      manual: '手搓模式',
-      roaming: '漫游模式',
     };
-    return map[type] || '短剧模式';
+    return map[type] || type;
   };
 
   return (
-    <div className="h-screen bg-black flex overflow-hidden">
-      {/* Left Sidebar */}
-      <aside className="w-56 bg-black/50 border-r border-white/10 flex flex-col flex-shrink-0">
+    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-hidden">
+      {/* Left Sidebar - hidden on mobile */}
+      <aside className="hidden lg:flex w-56 bg-black/50 border-r border-white/10 flex-col flex-shrink-0">
         {/* Logo */}
         <div className="h-14 flex items-center px-4 border-b border-white/10">
           <div className="flex items-center gap-2">
@@ -221,6 +189,34 @@ export default function Dashboard() {
           </div>
         </nav>
       </aside>
+
+      {/* Mobile Navigation - shown on small screens */}
+      <nav className="lg:hidden bg-zinc-900/90 backdrop-blur-lg border-b border-white/10 px-4 py-2 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white font-semibold text-sm">AIGC-MAS</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                onClick={() => handleNavClick(item.key)}
+                className={`p-2 rounded-lg transition-colors ${
+                  activeNav === item.key
+                    ? 'bg-pink-500/20 text-pink-400'
+                    : 'text-white/60 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -311,7 +307,7 @@ export default function Dashboard() {
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-8 grid grid-cols-4 gap-4">
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: '总项目数', value: projects.length, icon: Film },
                 { label: '进行中', value: projects.filter((p) => p.status === 'in_production' || p.status === 'planning').length, icon: Video },

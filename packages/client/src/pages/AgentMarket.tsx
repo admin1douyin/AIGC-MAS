@@ -128,7 +128,7 @@ export default function AgentMarket() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: '智能体总数', value: loading ? '-' : agents.length, icon: Bot },
           { label: '累计使用次数', value: '10万+', icon: Users },

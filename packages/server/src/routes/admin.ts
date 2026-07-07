@@ -1,22 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, requireAdmin } from '../middleware/auth';
 import { seedanceService } from '../services/seedanceService';
 import { alipayService } from '../services/alipayService';
 
 const router = Router();
-
-const ADMIN_ROLES = ['super_admin', 'admin'];
-
-function requireAdmin(req: Request, res: Response, next: any) {
-  if (!req.profile || !ADMIN_ROLES.includes(req.profile.role)) {
-    return res.status(403).json({
-      success: false,
-      error: { code: 'FORBIDDEN', message: '需要管理员权限' },
-    });
-  }
-  next();
-}
 
 router.get('/config/:category', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {

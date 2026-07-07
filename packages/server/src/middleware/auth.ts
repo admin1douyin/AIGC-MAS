@@ -67,6 +67,18 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 }
 
+// Require admin role (must be used after requireAuth)
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const ADMIN_ROLES = ['super_admin', 'admin'];
+  if (!req.profile || !ADMIN_ROLES.includes(req.profile.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: '需要管理员权限' },
+    });
+  }
+  next();
+}
+
 // Optional auth - attaches profile if token provided, but doesn't require it
 export async function optionalAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;

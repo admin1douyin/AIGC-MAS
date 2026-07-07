@@ -123,38 +123,35 @@ const ASSET_CATEGORIES = [
 ];
 
 const CREATION_MODES = [
-  { id: 'short-drama', name: '短剧/漫剧模式', description: '连贯剧情，一键成片', gradient: 'from-orange-500/30 to-red-500/30' },
-  { id: 'movie', name: '电影模式', description: '服务于电影', gradient: 'from-blue-500/30 to-purple-500/30' },
-  { id: 'tv-series', name: '电视剧模式', description: '服务于电视剧', gradient: 'from-amber-500/30 to-yellow-500/30' },
-  { id: 'ecommerce', name: '电商模式', description: '短视频矩阵、视频口播、动作参考', gradient: 'from-green-500/30 to-teal-500/30' },
-  { id: 'manual', name: '手搞模式', description: '提示词要求过高，新手请慎用', gradient: 'from-pink-500/30 to-rose-500/30' },
-  { id: 'roaming', name: '漫游模式', description: '互动影视游戏', gradient: 'from-cyan-500/30 to-blue-500/30' },
+  { id: 'short_drama', name: '短剧生产', description: 'AI多智能体全流程协作，批量生产高质量短剧内容', gradient: 'from-orange-500/30 to-red-500/30' },
+  { id: 'corporate_video', name: '企业视频', description: '品牌分析+营销策划+视频制作，一站式企业解决方案', gradient: 'from-teal-500/30 to-blue-500/30' },
+  { id: 'tourism_promo', name: '文旅宣传', description: '文化挖掘+故事创作+视觉呈现，打造地方文旅名片', gradient: 'from-cyan-500/30 to-blue-500/30' },
 ];
 
 
 
 
 const MOCK_ASSETS: AssetItem[] = [
-  { id: 'c1', name: '年轻女性模特', category: 'character', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop' },
-  { id: 'c2', name: '商务男士', category: 'character', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop' },
-  { id: 'c3', name: '活力少女', category: 'character', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop' },
-  { id: 's1', name: '现代办公室', category: 'scene', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&h=300&fit=crop' },
-  { id: 's2', name: '城市夜景', category: 'scene', image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=300&h=300&fit=crop' },
-  { id: 's3', name: '自然森林', category: 'scene', image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=300&h=300&fit=crop' },
-  { id: 'p1', name: '豆浆打包杯', category: 'prop', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop' },
-  { id: 'p2', name: '外卖头盔', category: 'prop', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop' },
-  { id: 'p3', name: '早餐煎饼', category: 'prop', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=300&fit=crop' },
+  { id: 'c1', name: '年轻女性模特', category: 'character', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=young%20female%20model%20portrait%20professional%20headshot&image_size=square_hd' },
+  { id: 'c2', name: '商务男士', category: 'character', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=business%20man%20professional%20portrait%20suit&image_size=square_hd' },
+  { id: 'c3', name: '活力少女', category: 'character', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=energetic%20young%20girl%20smiling%20portrait&image_size=square_hd' },
+  { id: 's1', name: '现代办公室', category: 'scene', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20office%20interior%20clean%20minimal&image_size=square_hd' },
+  { id: 's2', name: '城市夜景', category: 'scene', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=city%20night%20skyline%20neon%20lights&image_size=square_hd' },
+  { id: 's3', name: '自然森林', category: 'scene', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=natural%20forest%20sunlight%20trees%20green&image_size=square_hd' },
+  { id: 'p1', name: '豆浆打包杯', category: 'prop', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=soy%20milk%20cup%20takeaway%20drink&image_size=square_hd' },
+  { id: 'p2', name: '外卖头盔', category: 'prop', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=delivery%20helmet%20yellow%20urban&image_size=square_hd' },
+  { id: 'p3', name: '早餐煎饼', category: 'prop', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=breakfast%20pancake%20chinese%20jianbing&image_size=square_hd' },
 ];
 
 const STYLE_PRESETS = [
-  { id: 'realistic', name: '真人风格', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=150&fit=crop' },
-  { id: 'anime', name: '动漫风格', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=150&fit=crop' },
-  { id: '3d', name: '3D卡通', image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=200&h=150&fit=crop' },
-  { id: 'cyberpunk', name: '赛博朋克', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&h=150&fit=crop' },
-  { id: 'cinematic', name: '电影质感', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=200&h=150&fit=crop' },
-  { id: 'vintage', name: '复古怀旧', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=150&fit=crop' },
-  { id: 'watercolor', name: '水彩画风', image: 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=200&h=150&fit=crop' },
-  { id: 'oil', name: '油画风格', image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&h=150&fit=crop' },
+  { id: 'realistic', name: '真人风格', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=realistic%20photography%20style%20human%20portrait&image_size=landscape_4_3' },
+  { id: 'anime', name: '动漫风格', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=anime%20style%20illustration%20colorful&image_size=landscape_4_3' },
+  { id: '3d', name: '3D卡通', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=3D%20cartoon%20render%20cute%20character&image_size=landscape_4_3' },
+  { id: 'cyberpunk', name: '赛博朋克', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cyberpunk%20neon%20city%20futuristic&image_size=landscape_4_3' },
+  { id: 'cinematic', name: '电影质感', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cinematic%20film%20still%20dramatic%20lighting&image_size=landscape_4_3' },
+  { id: 'vintage', name: '复古怀旧', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20retro%20nostalgic%20film%20grain&image_size=landscape_4_3' },
+  { id: 'watercolor', name: '水彩画风', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=watercolor%20painting%20soft%20artistic&image_size=landscape_4_3' },
+  { id: 'oil', name: '油画风格', image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=oil%20painting%20classical%20rich%20colors&image_size=landscape_4_3' },
 ];
 
 const DURATION_OPTIONS = ['4S', '5S', '6S', '7S', '8S', '9S', '10S', '11S', '12S', '13S', '14S', '15S'];
@@ -183,8 +180,8 @@ export default function VideoWorkbench() {
   const [assetTab, setAssetTab] = useState<'projects' | 'scripts'>('projects');
   const [assetCategory, setAssetCategory] = useState('all');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
-  const [projectName] = useState('椰子水电商营销');
-  const [projectMode] = useState('电商模式');
+  const [projectName, setProjectName] = useState('加载中...');
+  const [projectMode, setProjectMode] = useState('');
   const [showVideoDetail, setShowVideoDetail] = useState(false);
   const [videoDetailTab, setVideoDetailTab] = useState<'all' | 'processing' | 'completed' | 'failed'>('all');
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
@@ -210,7 +207,7 @@ export default function VideoWorkbench() {
   };
 
   const [settingsRatio, setSettingsRatio] = useState('16:9');
-  const [settingsResolution, setSettingsResolution] = useState('1080P');
+  const [settingsResolution, setSettingsResolution] = useState('1080p');
   const [settingsModel, setSettingsModel] = useState('Seedance 2.0');
   const [settingsDuration, setSettingsDuration] = useState('5S');
   const [settingsStyle, setSettingsStyle] = useState('realistic');
@@ -222,8 +219,8 @@ export default function VideoWorkbench() {
   ]);
 
   const [shots, setShots] = useState<StoryboardShot[]>([
-    { id: 'shot1', index: 1, prompt: '清晨阳光厨房，年轻女性拿起椰子水，温暖自然光', duration: 3, thumbnail: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&h=120&fit=crop' },
-    { id: 'shot2', index: 2, prompt: '椰子水倒入玻璃杯特写，清澈液体，气泡升腾', duration: 2, thumbnail: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=200&h=120&fit=crop' },
+    { id: 'shot1', index: 1, prompt: '清晨阳光厨房，年轻女性拿起椰子水，温暖自然光', duration: 3, thumbnail: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=morning%20sunlight%20kitchen%20young%20woman%20coconut%20water&image_size=landscape_16_9' },
+    { id: 'shot2', index: 2, prompt: '椰子水倒入玻璃杯特写，清澈液体，气泡升腾', duration: 2, thumbnail: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=coconut%20water%20pouring%20glass%20close%20up%20bubbles&image_size=landscape_16_9' },
   ]);
 
   useEffect(() => {
@@ -262,7 +259,7 @@ export default function VideoWorkbench() {
         if (configData.aspectRatios?.length > 0) setSettingsRatio(configData.aspectRatios[0].id);
         if (configData.resolutions?.length > 0) setSettingsResolution(configData.resolutions[1]?.id || configData.resolutions[0].id);
         if (configData.models?.length > 0) setSettingsModel(configData.models[0].label);
-        if (configData.durations?.length > 0) setSettingsDuration(configData.durations[1] + 'S' || configData.durations[0] + 'S');
+        if (configData.durations?.length > 0) setSettingsDuration((configData.durations[1] ?? configData.durations[0]) + 'S');
         if (configData.styles?.length > 0) setSettingsStyle(configData.styles[0].id);
       }
     } catch (err: any) {
@@ -337,6 +334,25 @@ export default function VideoWorkbench() {
     return null;
   }, []);
 
+  const fetchProjectDetail = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const res = await api.get(`/projects/${projectId}`) as any;
+      if (res?.data) {
+        setProjectName(res.data.name || '项目详情');
+        const typeMap: Record<string, string> = {
+          short_drama: '短剧生产',
+          corporate_video: '企业视频',
+          tourism_promo: '文旅宣传',
+        };
+        setProjectMode(typeMap[res.data.type] || '项目');
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch project detail:', err);
+      setProjectName('项目详情');
+    }
+  }, [projectId]);
+
   useEffect(() => {
     fetchConfig();
     fetchProjects();
@@ -345,8 +361,9 @@ export default function VideoWorkbench() {
   useEffect(() => {
     if (projectId) {
       fetchTasks();
+      fetchProjectDetail();
     }
-  }, [projectId, fetchTasks]);
+  }, [projectId, fetchTasks, fetchProjectDetail]);
 
   useEffect(() => {
     const processingTasks = videoTasks.filter(
@@ -530,7 +547,7 @@ export default function VideoWorkbench() {
               : n
           )
         );
-        showToast('预演图生成完成，消耗3.8积分', 'success');
+        showToast('预演图生成完成，消耗4积分', 'success');
       }
     } catch (err: any) {
       console.error('Failed to generate preview:', err);
@@ -545,7 +562,7 @@ export default function VideoWorkbench() {
     const baseRate = config?.baseCreditPerSecond || 10;
     const duration = parseInt(settingsDuration);
     const resolutionObj = config?.resolutions?.find(r => r.id === settingsResolution);
-    const resolutionMultiplier = resolutionObj?.coefficient || (settingsResolution === '4k' ? 2 : settingsResolution === '1080p' ? 1.2 : settingsResolution === '720p' ? 1 : 0.8);
+    const resolutionMultiplier = resolutionObj?.coefficient || (settingsResolution.toLowerCase() === '4k' ? 2 : settingsResolution.toLowerCase() === '1080p' ? 1.2 : settingsResolution.toLowerCase() === '720p' ? 1 : 0.8);
     const modelObj = config?.models?.find(m => m.label === settingsModel);
     const modelMultiplier = modelObj?.coefficient || (settingsModel === 'Seedance 2.5' ? 1.5 : settingsModel === 'Seedance 2.0' ? 1 : settingsModel === 'Seedance 2.0 Fast' ? 0.7 : 0.5);
     return Math.round(baseRate * duration * resolutionMultiplier * modelMultiplier * 10) / 10;
@@ -1001,7 +1018,7 @@ export default function VideoWorkbench() {
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-semibold rounded-full hover:opacity-90 transition-all shadow-lg shadow-pink-500/20 disabled:opacity-50"
                             >
                               <Sparkles className="w-3 h-3" />
-                              {generatingPreview === node.id ? '生成中...' : '生成预演图 +3.8'}
+                              {generatingPreview === node.id ? '生成中...' : '生成预演图 +4'}
                             </button>
                             {generatingPreview === node.id ? (
                               <div className="flex items-center gap-2 text-pink-400 text-xs">

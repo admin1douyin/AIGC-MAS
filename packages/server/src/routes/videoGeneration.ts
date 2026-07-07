@@ -525,23 +525,37 @@ router.post('/generate-script', requireAuth, validate(generateScriptSchema), asy
       });
     }
 
-    const perSceneDuration = Math.floor(duration / sceneCount);
+    let scenes: any[];
+
+    const isConfigured = await seedanceService.isConfigured();
+    if (isConfigured && !seedanceService['isMockMode']()) {
+      try {
+        const storyboardResult = await seedanceService.generateStoryboard({
+          prompt,
+          shotCount: sceneCount,
+          style,
+        });
+
+        if (storyboardResult.status === 'completed' && storyboardResult.shots) {
+          scenes = storyboardResult.shots.map((shot: any, idx: number) => ({
+            id: shot.id || generateRandomUuid(),
+            index: idx + 1,
+            description: shot.promptCn || shot.prompt || `${prompt} - 场景 ${idx + 1}`,
+            dialogue: dialogues[idx % dialogues.length],
+            duration: shot.duration || Math.floor(duration / sceneCount),
+            cameraAngle: shot.cameraAngle || cameraAngles[idx % cameraAngles.length],
+          }));
+        } else {
+          throw new Error('Failed to generate storyboard');
+        }
+      } catch {
+        scenes = generateMockScenes(prompt, duration, sceneCount);
+      }
+    } else {
+      scenes = generateMockScenes(prompt, duration, sceneCount);
+    }
+
     const title = 'AI生成脚本 - ' + prompt.slice(0, 20);
-
-    const scenes = Array.from({ length: sceneCount }, (_, index) => {
-      const descIndex = index % sceneDescriptions.length;
-      const dialogueIndex = index % dialogues.length;
-      const cameraIndex = index % cameraAngles.length;
-
-      return {
-        id: generateRandomUuid(),
-        index: index + 1,
-        description: `${prompt} - ${sceneDescriptions[descIndex]}`,
-        dialogue: dialogues[dialogueIndex],
-        duration: perSceneDuration,
-        cameraAngle: cameraAngles[cameraIndex],
-      };
-    });
 
     const videoScript = await prisma.videoScript.create({
       data: {
@@ -569,6 +583,25 @@ router.post('/generate-script', requireAuth, validate(generateScriptSchema), asy
     });
   }
 });
+
+function generateMockScenes(prompt: string, duration: number, sceneCount: number): any[] {
+  const perSceneDuration = Math.floor(duration / sceneCount);
+
+  return Array.from({ length: sceneCount }, (_, index) => {
+    const descIndex = index % sceneDescriptions.length;
+    const dialogueIndex = index % dialogues.length;
+    const cameraIndex = index % cameraAngles.length;
+
+    return {
+      id: generateRandomUuid(),
+      index: index + 1,
+      description: `${prompt} - ${sceneDescriptions[descIndex]}`,
+      dialogue: dialogues[dialogueIndex],
+      duration: perSceneDuration,
+      cameraAngle: cameraAngles[cameraIndex],
+    };
+  });
+}
 
 const generateStoryboardSchema = z.object({
   scriptId: z.string(),
@@ -600,42 +633,94 @@ router.post('/generate-storyboard', requireAuth, validate(generateStoryboardSche
       scenes = [];
     }
 
-    if (scenes.length === 0) {
-      scenes = Array.from({ length: sceneCount }, (_, index) => ({
-        id: generateRandomUuid(),
-        index: index + 1,
-        description: `场景 ${index + 1}`,
-        duration: 5,
-      }));
+    let updatedScenes: any[];
+
+    const isConfigured = await seedanceService.isConfigured();
+    if (isConfigured && !seedanceService['isMockMode']()) {
+      const prompt = scenes.map((s: any) => s.description).join(' ');
+
+      try {
+        const storyboardResult = await seedanceService.generateStoryboard({
+          prompt,
+          shotCount: sceneCount,
+          style,
+        });
+
+        if (storyboardResult.status === 'completed' && storyboardResult.shots) {
+          updatedScenes = storyboardResult.shots.map((shot: any, idx: number) => {
+            const baseDesc = shot.promptCn || shot.prompt || '';
+            const cameraAngle = shot.cameraAngle || cameraAngles[idx % cameraAngles.length];
+            const styleDesc = style || 'cinematic';
+
+            const promptParts = [
+              baseDesc,
+              styleDesc ? `${styleDesc} style` : '',
+              cameraAngle ? `camera angle: ${cameraAngle}` : '',
+              aspectRatio ? `aspect ratio: ${aspectRatio}` : '',
+              'high quality, detailed, professional video',
+            ].filter(Boolean);
+
+            const cnPromptParts = [
+              baseDesc,
+              styleDesc ? `风格：${styleDesc}` : '',
+              cameraAngle ? `镜头角度：${cameraAngle}` : '',
+              '高质量，细节丰富，专业视频制作',
+            ].filter(Boolean);
+
+            return {
+              ...shot,
+              id: shot.id || generateRandomUuid(),
+              index: idx + 1,
+              description: baseDesc,
+              prompt: promptParts.join(', '),
+              promptCn: cnPromptParts.join('，'),
+              duration: shot.duration || 5,
+              cameraAngle,
+            };
+          });
+        } else {
+          updatedScenes = generateStoryboardMockScenes(scenes, sceneCount, style, aspectRatio);
+        }
+      } catch {
+        updatedScenes = generateStoryboardMockScenes(scenes, sceneCount, style, aspectRatio);
+      }
+    } else {
+      if (scenes.length === 0) {
+        scenes = Array.from({ length: sceneCount }, (_, index) => ({
+          id: generateRandomUuid(),
+          index: index + 1,
+          description: `场景 ${index + 1}`,
+          duration: 5,
+        }));
+      }
+      updatedScenes = scenes.map((scene: any, index: number) => {
+        const baseDesc = scene.description || '';
+        const cameraAngle = scene.cameraAngle || '';
+        const styleDesc = style || 'cinematic';
+
+        const promptParts = [
+          baseDesc,
+          styleDesc ? `${styleDesc} style` : '',
+          cameraAngle ? `camera angle: ${cameraAngle}` : '',
+          aspectRatio ? `aspect ratio: ${aspectRatio}` : '',
+          'high quality, detailed, professional video',
+        ].filter(Boolean);
+
+        const cnPromptParts = [
+          baseDesc,
+          styleDesc ? `风格：${styleDesc}` : '',
+          cameraAngle ? `镜头角度：${cameraAngle}` : '',
+          '高质量，细节丰富，专业视频制作',
+        ].filter(Boolean);
+
+        return {
+          ...scene,
+          prompt: promptParts.join(', '),
+          promptCn: cnPromptParts.join('，'),
+          referenceImage: '',
+        };
+      });
     }
-
-    const updatedScenes = scenes.map((scene: any, index: number) => {
-      const baseDesc = scene.description || '';
-      const cameraAngle = scene.cameraAngle || '';
-      const styleDesc = style || 'cinematic';
-
-      const promptParts = [
-        baseDesc,
-        styleDesc ? `${styleDesc} style` : '',
-        cameraAngle ? `camera angle: ${cameraAngle}` : '',
-        aspectRatio ? `aspect ratio: ${aspectRatio}` : '',
-        'high quality, detailed, professional video',
-      ].filter(Boolean);
-
-      const cnPromptParts = [
-        baseDesc,
-        styleDesc ? `风格：${styleDesc}` : '',
-        cameraAngle ? `镜头角度：${cameraAngle}` : '',
-        '高质量，细节丰富，专业视频制作',
-      ].filter(Boolean);
-
-      return {
-        ...scene,
-        prompt: promptParts.join(', '),
-        promptCn: cnPromptParts.join('，'),
-        referenceImage: '',
-      };
-    });
 
     await prisma.videoScript.update({
       where: { id: scriptId },
@@ -660,6 +745,45 @@ router.post('/generate-storyboard', requireAuth, validate(generateStoryboardSche
   }
 });
 
+function generateStoryboardMockScenes(scenes: any[], sceneCount: number, style: string | undefined, aspectRatio: string | undefined): any[] {
+  const baseScenes = scenes.length > 0 ? scenes : Array.from({ length: sceneCount }, (_, index) => ({
+    id: generateRandomUuid(),
+    index: index + 1,
+    description: `场景 ${index + 1}`,
+    duration: 5,
+  }));
+
+  return baseScenes.map((scene: any, index: number) => {
+    const baseDesc = scene.description || '';
+    const cameraAngle = scene.cameraAngle || cameraAngles[index % cameraAngles.length];
+    const styleDesc = style || 'cinematic';
+
+    const promptParts = [
+      baseDesc,
+      styleDesc ? `${styleDesc} style` : '',
+      cameraAngle ? `camera angle: ${cameraAngle}` : '',
+      aspectRatio ? `aspect ratio: ${aspectRatio}` : '',
+      'high quality, detailed, professional video',
+    ].filter(Boolean);
+
+    const cnPromptParts = [
+      baseDesc,
+      styleDesc ? `风格：${styleDesc}` : '',
+      cameraAngle ? `镜头角度：${cameraAngle}` : '',
+      '高质量，细节丰富，专业视频制作',
+    ].filter(Boolean);
+
+    return {
+      ...scene,
+      prompt: promptParts.join(', '),
+      promptCn: cnPromptParts.join('，'),
+      referenceImage: '',
+      duration: scene.duration || 5,
+      cameraAngle,
+    };
+  });
+}
+
 // Generate preview image (low-cost style preview)
 const generatePreviewSchema = z.object({
   projectId: z.string(),
@@ -673,24 +797,24 @@ router.post('/generate-preview', requireAuth, validate(generatePreviewSchema), a
     const { projectId, prompt, style, aspectRatio } = req.body;
     const profileId = req.profile!.id;
 
-    const credits = 3.8; // Fixed cost for preview image
+    const credits = 4; // Fixed cost for preview image (integer to match usedCredits Int field)
     const hasEnoughCredits = await checkAndDeductCredits(profileId, credits);
 
     if (!hasEnoughCredits) {
       return res.status(402).json({
         success: false,
-        error: { code: 'INSUFFICIENT_CREDITS', message: '积分不足，预演图生成需要3.8积分' }
+        error: { code: 'INSUFFICIENT_CREDITS', message: '积分不足，预演图生成需要4积分' }
       });
     }
 
     // Mock preview image generation (in production, call actual image generation service)
     const taskId = `preview-${generateRandomUuid()}`;
     const previewImages = [
-      'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=225&fit=crop',
-      'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=400&h=225&fit=crop',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225&fit=crop',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=225&fit=crop',
-      'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&h=225&fit=crop',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20generated%20preview%20image%20cinematic%20shot&image_size=landscape_16_9',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20generated%20preview%20dramatic%20scene&image_size=landscape_16_9',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20generated%20preview%20portrait%20style&image_size=landscape_16_9',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20generated%20preview%20office%20scene&image_size=landscape_16_9',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20generated%20preview%20city%20night&image_size=landscape_16_9',
     ];
     const imageUrl = previewImages[Math.floor(Math.random() * previewImages.length)];
 
@@ -724,7 +848,7 @@ router.post('/generate-preview', requireAuth, validate(generatePreviewSchema), a
     });
   } catch (error: any) {
     console.error('Generate preview image error:', error);
-    await refundCredits(req.profile!.id, 3.8);
+    await refundCredits(req.profile!.id, 4);
     res.status(500).json({
       success: false,
       error: { code: 'GENERATION_ERROR', message: error.message }

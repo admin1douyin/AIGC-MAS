@@ -31,11 +31,23 @@ const navItems = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string>('viewer');
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, getProfile } = useAuth();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -63,11 +75,16 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-bg flex">
-      {/* Sidebar */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-white border-r border-border transition-all duration-300 flex flex-col`}
+        } ${mobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 lg:relative' : ''} bg-white border-r border-border transition-all duration-300 flex flex-col lg:flex-shrink-0`}
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b border-border">
@@ -124,17 +141,25 @@ export default function Layout() {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-border flex items-center justify-between px-6">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">
-              {getPageTitle(location.pathname)}
-            </h2>
-          </div>
+        <header className="h-16 bg-white border-b border-border flex items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="lg:hidden p-2 hover:bg-bg-surface-hover rounded-lg transition-colors"
+            >
+              <Menu className="w-6 h-6 text-text-primary" />
+            </button>
+            <div className="hidden sm:block">
+              <h2 className="text-lg font-semibold text-text-primary">
+                {getPageTitle(location.pathname)}
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
             {/* Subscription Badge */}
             <button
               onClick={() => navigate('/app/subscription')}
-              className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full hover:bg-primary/20 transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full hover:bg-primary/20 transition-colors"
             >
               <CreditCard className="w-4 h-4" />
               升级专业版

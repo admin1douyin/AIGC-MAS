@@ -74,76 +74,108 @@ function generateFileName(originalName: string): string {
 }
 
 router.get('/', async (req: Request, res: Response) => {
-  const projectId = req.query.projectId as string;
-  const type = req.query.type as string;
-  const category = req.query.category as string;
-  const tag = req.query.tag as string;
-  const search = req.query.search as string;
+  try {
+    const projectId = req.query.projectId as string;
+    const type = req.query.type as string;
+    const category = req.query.category as string;
+    const tag = req.query.tag as string;
+    const search = req.query.search as string;
 
-  const where: any = {};
-  if (projectId) where.projectId = projectId;
-  if (type) where.type = type;
-  if (category) where.category = category;
-  if (tag) where.tags = { contains: tag };
-  if (search) {
-    where.name = { contains: search, mode: 'insensitive' };
+    const where: any = {};
+    if (projectId) where.projectId = projectId;
+    if (type) where.type = type;
+    if (category) where.category = category;
+    if (tag) where.tags = { contains: tag };
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
+    const assets = await prisma.videoAsset.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ success: true, data: assets });
+  } catch (error: any) {
+    console.error('Get assets error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
   }
-
-  const assets = await prisma.videoAsset.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-  });
-
-  res.json({ success: true, data: assets });
 });
 
 router.get('/categories', async (req: Request, res: Response) => {
-  const projectId = req.query.projectId as string;
+  try {
+    const projectId = req.query.projectId as string;
 
-  const where: any = {};
-  if (projectId) where.projectId = projectId;
+    const where: any = {};
+    if (projectId) where.projectId = projectId;
 
-  const categories = await prisma.videoAsset.findMany({
-    where,
-    distinct: ['category'],
-    select: { category: true },
-  });
+    const categories = await prisma.videoAsset.findMany({
+      where,
+      distinct: ['category'],
+      select: { category: true },
+    });
 
-  res.json({
-    success: true,
-    data: categories.map((c: any) => c.category).filter(Boolean),
-  });
+    res.json({
+      success: true,
+      data: categories.map((c: any) => c.category).filter(Boolean),
+    });
+  } catch (error: any) {
+    console.error('Get categories error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
 });
 
 router.get('/tags', async (req: Request, res: Response) => {
-  const projectId = req.query.projectId as string;
+  try {
+    const projectId = req.query.projectId as string;
 
-  const where: any = {};
-  if (projectId) where.projectId = projectId;
+    const where: any = {};
+    if (projectId) where.projectId = projectId;
 
-  const assets = await prisma.videoAsset.findMany({ where });
-  const allTags = new Set<string>();
-  assets.forEach((a: any) => {
-    if (a.tags) {
-      const tags = JSON.parse(a.tags) as string[];
-      tags.forEach((t: string) => allTags.add(t));
-    }
-  });
+    const assets = await prisma.videoAsset.findMany({ where });
+    const allTags = new Set<string>();
+    assets.forEach((a: any) => {
+      if (a.tags) {
+        const tags = JSON.parse(a.tags) as string[];
+        tags.forEach((t: string) => allTags.add(t));
+      }
+    });
 
-  res.json({ success: true, data: Array.from(allTags) });
+    res.json({ success: true, data: Array.from(allTags) });
+  } catch (error: any) {
+    console.error('Get tags error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
+  }
 });
 
 router.get('/:id', async (req: Request, res: Response) => {
-  const asset = await prisma.videoAsset.findUnique({
-    where: { id: req.params.id },
-    include: { project: { select: { id: true, name: true } } },
-  });
+  try {
+    const asset = await prisma.videoAsset.findUnique({
+      where: { id: req.params.id },
+      include: { project: { select: { id: true, name: true } } },
+    });
 
-  if (!asset) {
-    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Asset not found' } });
+    if (!asset) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Asset not found' } });
+    }
+
+    res.json({ success: true, data: asset });
+  } catch (error: any) {
+    console.error('Get asset error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message }
+    });
   }
-
-  res.json({ success: true, data: asset });
 });
 
 router.post('/upload', requireAuth, upload.single('file'), async (req: Request & { file?: any }, res: Response) => {

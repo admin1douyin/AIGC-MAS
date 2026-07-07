@@ -3,7 +3,7 @@ import api from './api';
 export interface Project {
   id: string;
   name: string;
-  type: 'short_drama' | 'corporate_video' | 'tourism_promo';
+  type: 'short_drama' | 'corporate_video' | 'tourism_promo' | 'movie' | 'tv_drama' | 'ecommerce' | 'manual' | 'roaming';
   status: string;
   description: string;
   brief?: any;

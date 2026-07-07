@@ -216,9 +216,8 @@ class SeedanceService {
     ];
   }
 
-  private mockGenerateVideo(params: GenerateVideoParams): VideoGenerationTask {
+  private mockGenerateVideo(_params: GenerateVideoParams): VideoGenerationTask {
     const taskId = this.generateMockTaskId();
-    console.debug(`[SeedanceService] Mock generate video: ${params.prompt.substring(0, 50)}...`);
 
     return {
       taskId,
@@ -263,6 +262,10 @@ class SeedanceService {
       return { taskId: 'unconfigured', status: 'failed', error: 'Seedance API 未配置' };
     }
 
+    if (this.isMockMode()) {
+      return this.mockGenerateStoryboard(params);
+    }
+
     try {
       const response = await fetch(`${config.baseUrl}/v1/storyboard/generate`, {
         method: 'POST',
@@ -295,6 +298,31 @@ class SeedanceService {
         error: error.message || '网络错误',
       };
     }
+  }
+
+  private mockGenerateStoryboard(params: {
+    prompt: string;
+    shotCount?: number;
+    style?: string;
+  }): { taskId: string; status: string; shots?: any[]; error?: string } {
+    const taskId = this.generateMockTaskId();
+    const shotCount = params.shotCount || 3;
+
+    const shots = Array.from({ length: shotCount }, (_, idx) => ({
+      id: `shot-${idx}`,
+      index: idx + 1,
+      prompt: `${params.prompt} - 镜头 ${idx + 1}`,
+      promptCn: `${params.prompt} - 镜头 ${idx + 1}`,
+      duration: 3 + Math.floor(Math.random() * 3),
+      referenceImage: '',
+      cameraAngle: ['全景', '中景', '特写', '俯拍', '仰拍'][idx % 5],
+    }));
+
+    return {
+      taskId,
+      status: 'completed',
+      shots,
+    };
   }
 
   clearCache() {

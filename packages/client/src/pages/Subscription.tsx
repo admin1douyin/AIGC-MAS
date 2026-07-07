@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, Zap, Crown, Building } from 'lucide-react';
+import { Check, Zap, Crown, Building, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -85,6 +85,12 @@ export default function Subscription() {
   const [loading, setLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+
+  const showToast = (message: string, type: 'error' | 'success' = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   useEffect(() => {
     if (user) {
@@ -117,7 +123,7 @@ export default function Subscription() {
 
   const handleSubscribe = async (planId: string) => {
     if (!user) {
-      alert('请先登录后再订阅');
+      showToast('请先登录后再订阅', 'error');
       return;
     }
 
@@ -134,11 +140,10 @@ export default function Subscription() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('请先登录');
+        showToast('请先登录', 'error');
         return;
       }
 
-      // Create order and redirect to Alipay
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: {
@@ -147,25 +152,22 @@ export default function Subscription() {
         },
         body: JSON.stringify({
           plan: planId,
-          amount: planId === 'pro' ? 29900 : 0, // in cents
+          amount: planId === 'pro' ? 29900 : 0,
         }),
       });
 
       const result = await response.json();
 
       if (result.success && result.data?.paymentUrl) {
-        // Redirect to Alipay payment page (production or sandbox)
-        // The backend returns the appropriate paymentUrl based on ALIPAY_* env vars
         window.location.href = result.data.paymentUrl;
       } else if (result.success && result.data?.mode === 'mock') {
-        // Mock mode without a real payment URL - update subscription locally
-        alert('订单已创建（演示模式），订阅已激活');
+        showToast('订单已创建（演示模式），订阅已激活', 'success');
         loadSubscription();
       } else {
-        alert(result.error?.message || '创建订单失败');
+        showToast(result.error?.message || '创建订单失败', 'error');
       }
     } catch (error: any) {
-      alert(error.message || '创建订单失败');
+      showToast(error.message || '创建订单失败', 'error');
     } finally {
       setLoading(false);
     }
@@ -175,6 +177,21 @@ export default function Subscription() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl border animate-in slide-in-from-right ${
+          toast.type === 'error'
+            ? 'bg-red-500/20 border-red-500/30 text-red-300'
+            : 'bg-green-500/20 border-green-500/30 text-green-300'
+        }`}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 hover:opacity-70">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-text-primary mb-4">选择适合您的方案</h1>
         <p className="text-text-secondary max-w-2xl mx-auto">

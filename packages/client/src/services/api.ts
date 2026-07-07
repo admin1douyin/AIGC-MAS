@@ -20,10 +20,18 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    // Handle 401 Unauthorized - redirect to login but don't force signOut
-    // (the session may still be valid, just the token wasn't sent in time)
-    if (error.response?.status === 401 && !window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login';
+    if (error.response?.status === 401) {
+      const currentPath = window.location.pathname;
+      const isAuthPath = ['/login', '/register', '/forgot-password', '/reset-password'].includes(currentPath);
+      if (!isAuthPath) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            window.location.href = '/login';
+          }
+        }).catch(() => {
+          window.location.href = '/login';
+        });
+      }
     }
     console.error('API Error:', error);
     return Promise.reject(error);

@@ -34,18 +34,15 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Standalone full-screen pages with own layout (not nested in Layout) */}
-        <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
-
-        {/* Layout-wrapped pages - Dashboard is the index route */}
+        {/* Layout-wrapped pages */}
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
+          <Route path="assets" element={<Assets />} />
+          <Route path="ai-actors" element={<AIActors />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/new" element={<NewProject />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="projects/:id/script" element={<ScriptEditor />} />
-          <Route path="assets" element={<Assets />} />
-          <Route path="ai-actors" element={<AIActors />} />
           <Route path="agents" element={<Agents />} />
           <Route path="agent-market" element={<AgentMarket />} />
           <Route path="chat" element={<ChatAgent />} />
@@ -55,6 +52,9 @@ function App() {
           <Route path="subscription" element={<Subscription />} />
           <Route path="admin/settings" element={<AdminSettings />} />
         </Route>
+
+        {/* Standalone full-screen pages with own layout (not nested in Layout) */}
+        <Route path="/app/projects/:id/workbench" element={<ProtectedRoute><VideoWorkbench /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );

@@ -37,9 +37,9 @@ const ENV_CONFIG: EnvConfig = {
     DATABASE_URL: /^postgresql:\/\/.+/,
     DIRECT_URL: /^postgresql:\/\/.+/,
     SUPABASE_URL: /^https:\/\/[a-z0-9-]+\.supabase\.co$/,
-    // JWT format: header.payload.signature (3 parts)
-    SUPABASE_SERVICE_ROLE_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,})$/,
-    SUPABASE_ANON_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,})$/,
+    // Support both JWT format (header.payload.signature) and new format (sb_publishable_/sb_secret_ prefix)
+    SUPABASE_SERVICE_ROLE_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}|sb_secret_[A-Za-z0-9_-]{10,})$/,
+    SUPABASE_ANON_KEY: /^(eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}|sb_publishable_[A-Za-z0-9_-]{10,})$/,
   },
 };
 
@@ -70,16 +70,17 @@ export function validateEnv(): void {
       }
     }
 
-    // Additional JWT validation
+    // Additional validation for Supabase keys
+    // Accept both JWT format (3 parts separated by .) and new format (sb_publishable_/sb_secret_ prefix)
     if (varName === 'SUPABASE_ANON_KEY' || varName === 'SUPABASE_SERVICE_ROLE_KEY') {
-      const parts = value.split('.');
-      if (parts.length !== 3) {
-        // Find the var in invalidVars and update it
+      const isJwtFormat = value.startsWith('eyJ') && value.split('.').length === 3;
+      const isNewFormat = value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+      if (!isJwtFormat && !isNewFormat) {
         const idx = invalidVars.findIndex(v => v.startsWith(varName));
         if (idx >= 0) {
-          invalidVars[idx] = `${varName} (JWT must have 3 parts, got ${parts.length})`;
+          invalidVars[idx] = `${varName} (invalid format - expected JWT or sb_publishable_/sb_secret_ prefix)`;
         } else {
-          invalidVars.push(`${varName} (JWT must have 3 parts, got ${parts.length})`);
+          invalidVars.push(`${varName} (invalid format - expected JWT or sb_publishable_/sb_secret_ prefix)`);
         }
       }
     }

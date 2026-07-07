@@ -279,9 +279,9 @@ router.post('/subscription/renew', requireAuth, async (req: Request, res: Respon
         profileId: req.profile!.id,
         orderNo,
         type: 'subscription',
-        amount: subscription.plan === 'pro' ? 99 : 299,
+        amount: subscription.plan === 'pro' ? 299 : 2999,
         plan: subscription.plan,
-        credits: subscription.plan === 'pro' ? 999 : 0,
+        credits: subscription.plan === 'pro' ? 999 : 9999,
         status: 'pending',
       },
     });
@@ -321,9 +321,9 @@ router.post('/subscription/cancel', requireAuth, async (req: Request, res: Respo
   }
 });
 
-router.post('/check-subscription', async (req: Request, res: Response) => {
+router.post('/check-subscription', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { profileId } = req.body;
+    const profileId = req.profile!.id;
 
     const subscription = await prisma.subscription.findUnique({
       where: { profileId },
